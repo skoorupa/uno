@@ -36,7 +36,8 @@ var username = decodeURI(getsearch("nickname"));
 if (roomid) document.title = roomid + " - graj UNO";
 console.log(roomid);
 var cardbox = document.getElementById("mojekarty");
-var connection = new WebSocket('ws://'+window.location.hostname, ['soap', 'xmpp']);
+var protocol = (window.location.protocol == "https:") ? "wss://" : "ws://";
+var connection = new WebSocket(protocol+window.location.hostname, ['soap', 'xmpp']);
 
 connection.onmessage = function (event) {
   var msg = JSON.parse(event.data);
