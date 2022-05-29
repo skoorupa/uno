@@ -1,10 +1,44 @@
 <!DOCTYPE html>
-<html lang="pl">
-<head>
-    <meta charset="UTF-8">
-    <title>MONOPOLY</title>
-</head>
-<body>
-    
-</body>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>UNO</title>
+    <link rel="stylesheet" href="style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  </head>
+  <body>
+    <div id="all">
+      <div class="box bok" id="playersbox">
+        <p>Gracze:</p>
+        <table id="players">
+
+        </table>
+      </div>
+      <div class="box main">
+        <canvas id="c" height="700" width="700"></canvas>
+      </div>
+      <div id="mojekarty"></div>
+      <div class="box bok" id="chatbox">
+        kliknij [esc], by wyjść
+        <br>
+        <textarea id="chat" readonly></textarea>
+        <br>
+        <input id="chatinput" onkeydown="checkenter(this, event, sendmsg)"><button onclick="sendmsg()">Wyślij</button>
+      </div>
+    </div>
+    <div class="gray" id="choosecolorback">
+      <div class="box" id="choosecolor">
+        <p>Wybierz kolor:</p>
+        <input type="radio" name="kolor" value="blue"><span style="color:blue;">Niebieski</span><br>
+        <input type="radio" name="kolor" value="green"><span style="color:green;">Zielony</span><br>
+        <input type="radio" name="kolor" value="yellow"><span style="color:darkgoldenrod;">Żółty</span><br>
+        <input type="radio" name="kolor" value="red"><span style="color:red;">Czerwony</span><br>
+        <button id="choosecolorbtn">Potwierdź</button>
+      </div>
+    </div>
+
+
+
+    <script src="script.js" charset="utf-8"></script>
+  </body>
 </html>

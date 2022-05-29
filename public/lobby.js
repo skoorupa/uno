@@ -19,7 +19,7 @@ function getrooms() {
 function listrooms(rooms) {
     roomsdiv.innerHTML = "";
     rooms.forEach(room => {
-        roomsdiv.innerHTML += `<div class="roombutton" onclick="goto('joinroom/${room.id}')">Pokój #${room.id}</div>`;
+        roomsdiv.innerHTML += `<div class="roombutton" onclick="goto('joinroom/${room.id}')">Pokój ${room.id}</div>`;
     });
 }
 

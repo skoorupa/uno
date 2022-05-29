@@ -1,0 +1,67 @@
+body {
+  margin:0;
+  font-family: sans-serif;
+  text-align: center;
+}
+
+#mojekarty {
+  position: fixed;
+  bottom: 50px;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+#mojekarty > img {
+  margin: 0px 5px -20px 5px;
+}
+
+#mojekarty > img:hover {
+  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+  margin: -2px 5px -18px 5px;
+}
+
+#c {
+  height: 700px;
+  border: 1px solid #000000;
+  width: 700px;
+  margin: 0 auto;
+  display: block;
+}
+
+#all {
+  position: relative;
+  width: 1228px;
+  height: 704px;
+  margin: auto;
+}
+
+.box {
+  height: 700px;
+  padding: 20px;
+  display: inline-block;
+  border: 1px solid black;
+  float: left;
+}
+
+.bok {
+  width: 200px;
+}
+
+.gray {
+  position: fixed;
+  height: 100%;
+  width: 100%;
+  background-color: rgba(15,15,15,0.25);
+  top: 0;
+  display: none;
+}
+
+#players {
+  border: 1px solid black;
+  padding: 3px;
+}
+
+#chat {
+  height: 200px;
+  width: 100px;
+}
