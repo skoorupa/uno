@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <title>websocket</title>
+</head>
+<body>
+    <input type="text" placeholder="Wiadomość" id="input"><input type="button" onclick="sendmessage()" value="Wyślij">
+    <div id="chat"></div>
+
+    <script>
+        var input = document.getElementById("input");
+        var nickname;
+
+        var protocol = (window.location.protocol == "https:") ? "wss:" : "ws:";
+        var connection = new WebSocket(protocol+'//'+window.location.hostname, ['soap', 'xmpp']);
+        connection.onmessage = function (event) {
+            var content = JSON.parse(event.data);
+            if (content.type != "pong") console.log(content);
+            if (content.type == "test-chat-join" || content.type == "test-chat-message") {
+                chat.innerHTML += `<b>${content.nickname}:</b> ${content.message}<br>`;
+            }
+        };
+        
+        connection.addEventListener('open', function (event) {
+            nickname = prompt("Wpisz swój nick");
+            connection.send(JSON.stringify({
+                type: "test-chat-join",
+                nickname: nickname
+            }));
+            input.select();
+            setInterval(() => {
+                connection.send(JSON.stringify({type:"ping"}));
+            }, 10000);
+        });
+
+        function sendmessage() {
+            if (!input.value) return;
+            var data = JSON.stringify({
+                type: "test-chat-message",
+                nickname: nickname,
+                message: input.value
+            });
+            if (connection.readyState == 1)
+                connection.send(data);
+
+            input.value = "";
+        }
+
+        input.addEventListener("keydown", e => {
+            if (e.key == "Enter") sendmessage();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,62 @@
+﻿body {
+    margin: 0;
+    padding: 0;
+    font-family: Arial, Helvetica, sans-serif;
+    height: 100vh;
+}
+
+#flexbox {
+    display: flex;
+    height: 100%;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    align-content: center;
+    column-gap: 100px;
+}
+
+#leftpanel {
+    text-align: right;
+}
+
+#flexbox div {
+    width: 50%;
+}
+
+h1 {
+    margin: 0;
+    padding: 0;
+}
+
+.new.roombutton {
+    background: linear-gradient(0deg, rgba(36,68,40,1) 0%, rgba(70,105,66,1) 50%, rgba(141,200,135,1) 100%);
+    border-color: rgba(36,68,40,1);
+}
+
+.roombutton {
+    max-width: 200px;
+    max-height: 200px;
+    padding: 50px;
+    border-radius: 20px;
+    background: linear-gradient(0deg, rgb(0, 0, 0) 0%, rgb(59, 59, 59) 50%, rgb(112, 112, 112) 100%);
+    color: white;
+    border: 5px solid black;
+    /* margin-left: auto;
+    margin-right: auto; */
+    margin-bottom: 20px;
+    font-size: 150%;
+    text-align: center;
+    cursor: pointer;
+}
+
+.new.roombutton::before {
+    content: "+";
+}
+
+.roombutton:hover {
+    border-color: rgba(141,200,135,1);
+}
+
+#nickname {
+    text-align: center;
+}
