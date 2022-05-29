@@ -34,11 +34,11 @@ function getcss(el, p) {
 var roomid = getsearch("room");
 var username = decodeURI(getsearch("nickname"));
 if (roomid) document.title = roomid + " - graj UNO";
-console.log(roomid);
+
 var cardbox = document.getElementById("mojekarty");
+
 var protocol = (window.location.protocol == "https:") ? "wss://" : "ws://";
 var connection = new WebSocket(protocol+window.location.hostname, ['soap', 'xmpp']);
-
 connection.onmessage = function (event) {
   var msg = JSON.parse(event.data);
   console.log(msg);
@@ -134,6 +134,12 @@ connection.onmessage = function (event) {
           (i+1)+". "+msg.content[i],
         700/2, 70+22*(i+1));
       }
+      break;
+    case "ping":
+      connection.send(JSON.stringify({
+        "type": "pong",
+        "random": Math.random()
+      }));
       break;
     default:
       console.log("nieznana wiadomość "+msg.type);

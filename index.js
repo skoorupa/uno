@@ -198,12 +198,12 @@ wss.on('connection', function connection(ws) {
                         console.log("<-created new room "+ newid);
                         setTimeout(function () {
                             if (game.rooms[newid]) {
-                            if (game.rooms[newid].players.length == 0) {
-                                game.splice(game.rooms[newid], 1);
-                            //   fs.unlinkSync("./pokoje/"+newid+".json");
-                            //   fs.unlinkSync("./pokoje/"+newid+"chat.txt");
-                                console.log(newid+": deleted (idle)");
-                            }
+                                if (game.rooms[newid].players.length == 0) {
+                                    game.splice(game.rooms[newid], 1);
+                                //   fs.unlinkSync("./pokoje/"+newid+".json");
+                                //   fs.unlinkSync("./pokoje/"+newid+"chat.txt");
+                                    console.log(newid+": deleted (idle)");
+                                }
                             }
                         }, 30000);
                     } else {
@@ -387,6 +387,13 @@ wss.on('connection', function connection(ws) {
                         }
                     }
                 });
+
+                setTimeout(() => {
+                    user.send(JSON.stringify({
+                        "type":"ping",
+                        "random": Math.random()
+                    }));
+                }, 30000);
 
                 room.players.push(user);
                 if (Object.keys(room.admin).length===0)
@@ -724,6 +731,14 @@ wss.on('connection', function connection(ws) {
                 });
                 // fs.writeFileSync("pokoje/"+user.roomid+"chat.txt", content+newcontent);
                 // });
+                break;
+            case "pong":
+                setTimeout(() => {
+                    user.send(JSON.stringify({
+                        "type":"ping",
+                        "random": Math.random()
+                    }));
+                }, 30000);
                 break;
             default:
                 console.log("unknown message: "+msg.type);
