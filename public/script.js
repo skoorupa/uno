@@ -1,41 +1,12 @@
-function getsearch(arg) {
-  var s = location.search.substr(1).split("&");
-  var a = {};
-  s.forEach(function (item, index) {
-    var x = item.split("=");
-    a[x[0]] = x[1];
-  });
-
-  return a[arg];
-}
-
-function checkenter(input, key, f) {
-  if(key.key == "Enter") f();
-}
-
-function playsound(src) {
-  var s = new Audio(src);
-  s.play();
-}
-
-function getcss(el, p) {
-    var style = window.getComputedStyle(el);
-    var value = style.getPropertyValue(p);
-    if (value.substr(
-      value.length-2,
-      value.length-1
-    ) == "px") {
-      value = value.substr(0, value.length-2);
-      value = Number(value);
-    }
-    return value;
-}
-
-var roomid = getsearch("room");
-var username = decodeURI(getsearch("nickname"));
+const urlparams = new URLSearchParams(window.location.search);
+const roomid = urlparams.get("room");
+const username = urlparams.get("nickname");
 if (roomid) document.title = roomid + " - graj UNO";
 
-var cardbox = document.getElementById("mojekarty");
+const cardbox = document.getElementById("mojekarty");
+const sounds = {};
+sounds.message = new Audio("sounds/message.mp3");
+sounds.yourturn = new Audio("sounds/yourturn.mp3");
 
 var protocol = (window.location.protocol == "https:") ? "wss://" : "ws://";
 var connection = new WebSocket(protocol+window.location.hostname, ['soap', 'xmpp']);
@@ -54,15 +25,14 @@ connection.onmessage = function (event) {
       direction = msg.direction;
       movemakes = msg.movemakes;
       players = msg.players;
-      if (movemakes==username) playsound("sounds/yourturn.mp3");
+      if (movemakes==username) sounds.yourturn.play();
 
       update(msg);
       break;
     case "newmessage":
+      if (msg.notify)
+        sounds.message.play()
       document.getElementById("chat").value += msg.content;
-      if (msg.notify) {
-        playsound("sounds/message.mp3");
-      }
       break;
     case "joinedtoroom":
       document.getElementById("players").innerHTML = "";
@@ -201,8 +171,7 @@ ctx.textAlign="center";
 ctx.textBaseline="hanging";
 
 ctx.fillText(
-  "Witaj w UNO!\
-  Jesteś w pokoju nr "+
+  "Witaj w UNO! Jesteś w pokoju nr "+
   roomid,
 700/2, 50);
 
@@ -218,10 +187,10 @@ function update(content) {
     miejsca[miejsca.length-1][1]
   );
 
-  for (var i = 0; i < miejsca.length; i++)
-    ctx.lineTo(miejsca[i][0], miejsca[i][1]);
+  // for (var i = 0; i < miejsca.length; i++)
+  //   ctx.lineTo(miejsca[i][0], miejsca[i][1]);
 
-  ctx.stroke();
+  // ctx.stroke();
   document.getElementById("players").innerHTML = "";
 
   var myplayerindex = content.players.findIndex(function (obj) {
