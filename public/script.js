@@ -1,14 +1,25 @@
 const urlparams = new URLSearchParams(window.location.search);
-const roomid = urlparams.get("room");
-const username = urlparams.get("nickname");
-if (roomid) document.title = roomid + " - graj UNO";
+
+var room = {
+  roomid: urlparams.get("room"),
+  username: urlparams.get("nickname"),
+  mycards:[],
+  lastcard:null,
+  direction:"",
+  movemakes:null,
+  players:[]
+};
+
+if (room.roomid) document.title = room.roomid + " - graj UNO";
 
 const cardbox = document.getElementById("mojekarty");
+const playersbox = document.getElementById("players");
+
 const sounds = {};
 sounds.message = new Audio("sounds/message.mp3");
 sounds.yourturn = new Audio("sounds/yourturn.mp3");
 
-var protocol = (window.location.protocol == "https:") ? "wss://" : "ws://";
+const protocol = (window.location.protocol == "https:") ? "wss://" : "ws://";
 var connection = new WebSocket(protocol+window.location.hostname, ['soap', 'xmpp']);
 connection.onmessage = function (event) {
   var msg = JSON.parse(event.data);
@@ -20,14 +31,14 @@ connection.onmessage = function (event) {
       // "player": firstplayer.nickname,
       // "direction": "ccw", // counterclockwise
       // "isitmymove": isitmymove
-      mycards = msg.yourcards;
-      lastcard = msg.lastcard;
-      direction = msg.direction;
-      movemakes = msg.movemakes;
-      players = msg.players;
-      if (movemakes==username) sounds.yourturn.play();
+      room.mycards = msg.yourcards;
+      room.lastcard = msg.lastcard;
+      room.direction = msg.direction;
+      room.movemakes = msg.movemakes;
+      room.players = msg.players;
+      if (room.movemakes==room.username) sounds.yourturn.play();
 
-      update(msg);
+      updateUI(msg);
       break;
     case "newmessage":
       if (msg.notify)
@@ -35,65 +46,16 @@ connection.onmessage = function (event) {
       document.getElementById("chat").value += msg.content;
       break;
     case "joinedtoroom":
-      document.getElementById("players").innerHTML = "";
-
-      cardbox.innerHTML = "";
-      var invitetxt = document.createElement("span");
-      invitetxt.innerHTML = "zaproś znajomych:";
-      var inviteinput = document.createElement("input");
-      inviteinput.value = location.origin+"/?inviteid="+roomid;
-      inviteinput.setAttribute("readonly","readonly");
-      inviteinput.addEventListener("click", function () {
-        this.select();
-      });
-      invitetxt.appendChild(inviteinput);
-      cardbox.appendChild(invitetxt);
-
-      msg.content.forEach(function (item, index) {
-        var trow = document.createElement("tr");
-        var tnickname = document.createElement("td");
-
-        tnickname.innerHTML = item;
-        trow.appendChild(tnickname);
-        document.getElementById("players").appendChild(trow);
-      });
-      if (msg.admin == username) {
-        var startbtn = document.createElement("button");
-        startbtn.innerHTML = "Start";
-        startbtn.addEventListener("click", function () {
-          connection.send('{"type":"startgame"}');
-        });
-        cardbox.appendChild(startbtn);
-      }
+      prepare(msg);
       break;
     case "playerhasquit":
-      update(msg);
+      updateUI(msg);
       break;
     case "nickzajety":
       alert("Ten nick jest już zajęty.");
-      connect(roomid, username);
       break;
     case "gameover":
-      cardbox.innerHTML = "";
-      var invitetxt = document.createElement("span");
-      invitetxt.innerHTML = "zaproś znajomych:";
-      var inviteinput = document.createElement("input");
-      inviteinput.value = location.origin+"/?inviteid="+roomid;
-      inviteinput.setAttribute("readonly","readonly");
-      inviteinput.addEventListener("click", function () {
-        this.select();
-      });
-      invitetxt.appendChild(inviteinput);
-      cardbox.appendChild(invitetxt);
-
-      if (msg.admin == username) {
-        var startbtn = document.createElement("button");
-        startbtn.innerHTML = "Start";
-        startbtn.addEventListener("click", function () {
-          connection.send('{"type":"startgame"}');
-        });
-        cardbox.appendChild(startbtn);
-      }
+      prepare(msg);
 
       ctx.clearRect(0, 0, 700, 700);
       ctx.fillText(
@@ -117,29 +79,60 @@ connection.onmessage = function (event) {
   }
 };
 
-var mycards, lastcard, direction;
-connect(roomid, username);
+connect();
 
-function connect(roomid, username) {
-  console.log(username);
-  if (username==undefined) username = "";
+function prepare(msg) {
+  playersbox.innerHTML = "";
+  cardbox.innerHTML = "";
 
-  if(isFinite(roomid) && username.replace(/ /g, "") && username) {
+  var invitetxt = document.createElement("span");
+  invitetxt.innerHTML = "zaproś znajomych:";
+  var inviteinput = document.createElement("input");
+  inviteinput.value = location.origin+"/?inviteid="+room.roomid;
+  inviteinput.setAttribute("readonly","readonly");
+  inviteinput.addEventListener("click", function () {
+    this.select();
+  });
+  invitetxt.appendChild(inviteinput);
+  cardbox.appendChild(invitetxt);
+
+  msg.players.forEach(function (item, index) {
+    var trow = document.createElement("tr");
+    var tnickname = document.createElement("td");
+
+    tnickname.innerHTML = item;
+    trow.appendChild(tnickname);
+    playersbox.appendChild(trow);
+  });
+  if (msg.admin == room.username) {
+    var startbtn = document.createElement("button");
+    startbtn.innerHTML = "Start";
+    startbtn.addEventListener("click", function () {
+      connection.send('{"type":"startgame"}');
+    });
+    cardbox.appendChild(startbtn);
+  }
+}
+
+function connect() {
+  if (room.username==undefined) return;
+
+  if(isFinite(room.roomid) && room.username.replace(/ /g, "") && room.username) {
     console.log("wysylam zapytanie");
     if (connection.readyState != 1)
       connection.addEventListener('open', function (event) {
         connection.send(JSON.stringify({
           "type": "joinedtoroom",
-          "content": username,
-          "roomid": roomid,
+          "content": room.username,
+          "roomid": room.roomid,
           "path": "."+location.pathname
         }));
       });
     else
       connection.send(JSON.stringify({
         "type": "joinedtoroom",
-        "content": username,
-        "roomid": roomid,
+        "content": room.username,
+        "roomid": room.roomid,
         "path": "."+location.pathname
       }));
   }
@@ -172,14 +165,10 @@ ctx.textBaseline="hanging";
 
 ctx.fillText(
   "Witaj w UNO! Jesteś w pokoju nr "+
-  roomid,
+  room.roomid,
 700/2, 50);
 
-for (var i = 0; i < miejsca.length; i++)
-  ctx.lineTo(miejsca[i][0], miejsca[i][1]);
-
-//ctx.fillText("test", twojemiejsce[0], twojemiejsce[1]+20);
-function update(content) {
+function updateUI(content) {
   cardbox.innerHTML = "";
   ctx.clearRect(0, 0, 700, 700);
   ctx.moveTo(
@@ -191,10 +180,10 @@ function update(content) {
   //   ctx.lineTo(miejsca[i][0], miejsca[i][1]);
 
   // ctx.stroke();
-  document.getElementById("players").innerHTML = "";
+  playersbox.innerHTML = "";
 
   var myplayerindex = content.players.findIndex(function (obj) {
-    return obj.nickname == username;
+    return obj.nickname == room.username;
   });
 
   var places = placeevenly(content.players.length);
@@ -208,13 +197,13 @@ function update(content) {
     tcards.innerHTML = item.cardsquantity;
     trow.appendChild(tnickname);
     trow.appendChild(tcards);
-    document.getElementById("players").appendChild(trow);
+    playersbox.appendChild(trow);
 
     ctx.fillStyle = "black";
     ctx.fillText(item.nickname, miejsca[places[index]][0], miejsca[places[index]][1]+miejsca[places[index]][2]);
     ctx.fillStyle = "#941D01";
 
-    if (item.nickname == movemakes) {
+    if (item.nickname == room.movemakes) {
       var w = ctx.measureText(item.nickname).width;
       ctx.strokeRect(
         miejsca[places[index]][0] - w/2 - 10,
@@ -306,29 +295,29 @@ function dobierzkarte() {
   connection.send(JSON.stringify({
     "type": "movemade",
     "content": "dobierzkarte",
-    "roomid": roomid,
-    "username": username,
+    "roomid": room.roomid,
+    "username": room.username,
     "path": "."+location.pathname
   }));
 }
 
 function wybierzkarte(card) {
-  if (mycards.findIndex(function (obj) {
+  if (room.mycards.findIndex(function (obj) {
     return obj.id == card.id;
   }) != -1 &&
-  (lastcard.color == card.color ||
-  lastcard.content == card.content ||
-  lastcard.newcolor == card.color ||
+  (room.lastcard.color == card.color ||
+  room.lastcard.content == card.content ||
+  room.lastcard.newcolor == card.color ||
   card.color == "black" ||
-  (card.add && lastcard.add)
+  (card.add && room.lastcard.add)
   )) {
     if (!card.newcolor && card.colorchange) return pokazwyborkart(card);
     connection.send(JSON.stringify({
       "type": "movemade",
       "content": "wybierzkarte",
       "card": card,
-      "roomid": roomid,
-      "username": username,
+      "roomid": room.roomid,
+      "username": room.username,
       "path": "."+location.pathname
     }));
   }
@@ -351,14 +340,18 @@ function wybierzkolor(card) {
   document.getElementById('choosecolorback').style.display = "none";
 }
 
+document.getElementById("chatinput").addEventListener("keydown", Event=>{
+  if (Event.key == "Enter") sendmsg();
+});
+
 function sendmsg() {
   var cinput = document.getElementById("chatinput");
-  if (roomid && username) {
+  if (room.roomid && room.username) {
     connection.send(JSON.stringify({
       "type": "chatmessage",
       "content": cinput.value,
-      "roomid": roomid,
-      "username": username,
+      "roomid": room.roomid,
+      "username": room.username,
       "path": "."+location.pathname
     }));
     cinput.value = "";

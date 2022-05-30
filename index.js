@@ -25,11 +25,11 @@ app.get("/newroom/:nickname", function (req,res) {
     // create new room's id
     var id = 0;
     var roomids = [];
-    game.rooms.forEach(room=>{roomids.push(room.id)});
-    roomids = roomids.sort((a, b) => {
-        return a - b;
+    game.rooms.forEach(room=>{roomids.push(room.roomid)});
+    roomids = roomids.sort();
+    roomids.forEach(x=>{
+        if(id==x)id++
     });
-    roomids.forEach(x=>{if(id==x)id++});
 
     if (id >= game.maxrooms) {
         res.send("nope"); // too many rooms
@@ -71,7 +71,8 @@ app.get("/getrooms", function (req,res) {
     // console.log(game.rooms);
     var roomlist = [];
     game.rooms.forEach((room)=>{
-        roomlist.push({id: room.roomid, host: room.admin.nickname});
+        if (!room.isStarted)
+            roomlist.push({id: room.roomid, host: room.admin.nickname});
     });
     
     res.send(roomlist);
@@ -101,13 +102,13 @@ function random (limit) {
 wss.on('connection', function connection(ws) {
     allclients[allclients.length] = ws;
     ws.on('message', function (message) {
-        console.log('received: %s', message);
         var msg;
         try {
             msg = JSON.parse(message);
         } catch (e) {
             return;
         }
+        if (msg.type != "pong") console.log('received: %s', message);
         var user = this;
         switch (msg.type) {
             case "joinedtoroom":
@@ -234,7 +235,7 @@ wss.on('connection', function connection(ws) {
                 room.players.forEach(function (player, index) {
                     player.send(JSON.stringify({
                     "type":"joinedtoroom",
-                    "content": playerinfos,
+                    "players": playerinfos,
                     "admin": room.admin.nickname
                     }));
                 });
@@ -481,21 +482,16 @@ wss.on('connection', function connection(ws) {
                         room.scoreboard.push(lastplayer.nickname);
                     }
                     room.isStarted = false;
-                    // var playerinfos0 = [];
-                    // room.players.forEach(function (player, index) {
-                    //   playerinfos0.push(
-                    //     {
-                    //       nickname: player.nickname,
-                    //       place: room.scoreboard[player.nickname]
-                    //     }
-                    //   );
-                    // });
 
-
+                    var playerinfos = [];
+                    room.players.forEach(function (player, index) {
+                        playerinfos.push(player.nickname)
+                    });
                     room.players.forEach(function (player, index) {
                         player.send(JSON.stringify({
                         "type":"gameover",
                         "content": room.scoreboard,
+                        "players": playerinfos,
                         "admin": room.admin.nickname
                         }));
                     });

@@ -8,7 +8,7 @@
   </head>
   <body>
     <div id="all">
-      <div class="box bok" id="playersbox">
+      <div class="box left" id="playersbox">
         <p>Gracze:</p>
         <table id="players">
 
@@ -17,15 +17,13 @@
       <div class="box main">
         <canvas id="c" height="700" width="700"></canvas>
       </div>
-      <div id="mojekarty"></div>
-      <div class="box bok" id="chatbox">
-        kliknij [esc], by wyjść
-        <br>
+      <div class="box right" id="chatbox">
         <textarea id="chat" readonly></textarea>
         <br>
-        <input id="chatinput" onkeydown="checkenter(this, event, sendmsg)"><button onclick="sendmsg()">Wyślij</button>
+        <input id="chatinput"><button onclick="sendmsg()">Wyślij</button>
       </div>
     </div>
+    <div id="mojekarty"></div>
     <div class="gray" id="choosecolorback">
       <div class="box" id="choosecolor">
         <p>Wybierz kolor:</p>
