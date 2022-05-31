@@ -7,23 +7,105 @@ body {
   display: grid;
   grid-auto-columns: 1fr;
   grid-auto-flow: column;
+  /* position: fixed; */
 }
 
-.box {
+.column {
   /* display: inline-block; */
   /* text-align: center; */
   padding: 20px;
+  height: 100vh;
+  box-sizing: border-box;
 }
 
-.box.main {
-  /* position: relative; */
+.column.left {
+  background-color: #DAE5D0;
+}
+.column.left, .column.right {
+  display: grid;
+  align-content: space-between;
 }
 
-.box.left {
+.column.main {
+  background-color: #FEFBE7;
 }
 
-.box.right {
+.column.right {
+  background-color: #F9EBC8;
 }
+
+/* left */
+
+/* leaderboard */
+
+#leaderboard td {
+  margin:5px;
+  background-color: #bcc7b2;
+  padding: 10px;
+  border-radius: 5px;
+}
+
+/* start */
+
+#startbtn {
+  background: linear-gradient(0deg, rgba(36,68,40,1) 0%, rgba(70,105,66,1) 50%, rgba(141,200,135,1) 100%);
+  width: 100%;
+  max-height: 100px;
+  padding: 20px 0;
+  border-radius: 20px;
+  color: white;
+  border: 5px solid rgba(36,68,40,1);
+  /* margin-left: auto;
+  margin-right: auto; */
+  margin-bottom: 20px;
+  font-size: 150%;
+  text-align: center;
+  cursor: pointer;
+}
+
+#startbtn:hover {
+  background: linear-gradient(0deg, rgba(141,200,135,1) 0%, rgba(70,105,66,1) 50%, rgba(36,68,40,1) 100%);
+  /* border-color: rgba(141,200,135,1); */
+}
+
+/* share */
+
+#share, #chattext {
+  display: grid;
+  width: 100%;
+  grid-auto-columns: auto max-content;
+  grid-auto-flow: column;
+  background-color: white;
+  border-radius: 20px;
+  border: 5px solid black;
+}
+
+#share > *, #chattext > * {
+  /* border-radius: 20px; */
+  padding: 20px;
+  outline: none;
+  cursor: pointer;
+  border: none;
+}
+
+#sharelink, #chatinput {
+  background-color: white;
+  border-radius: 20px;
+}
+
+#sharebtn, #chatbtn {
+  border-radius: 14px;
+  color: white;
+  background: linear-gradient(0deg, rgb(0, 0, 0) 0%, rgb(59, 59, 59) 50%, rgb(112, 112, 112) 100%);
+  /* font-size: 150%; */
+  text-align: center;
+}
+
+#sharebtn:hover, #chatbtn:hover {
+  background: linear-gradient(0deg, rgb(112, 112, 112) 0%, rgb(59, 59, 59) 50%, rgb(0, 0, 0) 100%);
+}
+
+/* main */
 
 #c {
   height: 700px;
@@ -49,11 +131,94 @@ body {
   margin: -2px 5px -18px 5px;
 }
 
-.gray {
+/* chat */
+
+#chat {
+  overflow-y: auto;
+  margin-bottom: 20px;
+}
+
+/* overlays */
+
+.overlay {
   position: fixed;
   height: 100%;
   width: 100%;
-  background-color: rgba(15,15,15,0.25);
+  background-color: rgba(15,15,15,0.50);
   top: 0;
   display: none;
+  text-align: center;
 }
+
+.overlayalert {
+  background-color: white;
+  border-radius: 20px;
+  padding: 20px;
+  display: inline-block;
+  width:50%;
+  position: relative;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.choosecolorbtn {
+  display: block;
+  width: 50%;
+  max-height: 100px;
+  padding: 20px 0;
+  border-radius: 20px;
+  color: white;
+  border-width: 5px;
+  border-style: solid;
+  font-size: 150%;
+  text-align: center;
+  cursor: pointer;
+  margin-left: auto;
+  margin-right: auto;
+  margin-bottom: 20px;
+}
+
+.choosecolorbtn:last-of-type {
+  margin-bottom: 0;
+}
+
+.choosecolorbtn input {
+  display: none;
+}
+
+.redbtn {
+  background: linear-gradient(0deg, #a31f1f 0%, #ff0000 100%);
+  border-color: #a31f1f;
+}
+
+.redbtn:hover {
+  background: linear-gradient(0deg, #ff0000 0%, #a31f1f 100%);
+}
+
+.bluebtn {
+  background: linear-gradient(0deg, #11496f 0%, #256fa1 100%);
+  border-color: #11496f;
+}
+
+.bluebtn:hover {
+  background: linear-gradient(0deg, #256fa1 0%, #11496f 100%);
+}
+
+.yellowbtn {
+  background: linear-gradient(0deg, #a29b35 0%, #c8be2e 100%);
+  border-color: #a29b35;
+}
+
+.yellowbtn:hover {
+  background: linear-gradient(0deg, #c8be2e 0%, #a29b35 100%);
+}
+
+.greenbtn {
+  background: linear-gradient(0deg, #3f8b35 0%, #25a049 100%);
+  border-color: #3f8b35;
+}
+
+.greenbtn:hover {
+  background: linear-gradient(0deg, #25a049 0%, #3f8b35 100%);
+}
+

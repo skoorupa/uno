@@ -53,8 +53,14 @@ h1 {
     content: "+";
 }
 
+.new.roombutton:hover {
+    /* border-color: rgba(141,200,135,1);*/
+    background: linear-gradient(0deg, rgba(141,200,135,1) 0%, rgba(70,105,66,1) 50%, rgba(36,68,40,1) 100%);
+}
+
 .roombutton:hover {
-    border-color: rgba(141,200,135,1);
+    /* border-color: rgba(141,200,135,1);*/
+    background: linear-gradient(0deg, rgb(112, 112, 112) 0%, rgb(59, 59, 59) 50%,rgb(0, 0, 0) 100%);
 }
 
 #nickname {

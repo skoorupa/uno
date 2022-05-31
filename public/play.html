@@ -8,34 +8,53 @@
   </head>
   <body>
     <div id="all">
-      <div class="box left" id="playersbox">
-        <p>Gracze:</p>
-        <table id="players">
+      <div class="column left" id="playersbox">
+        <table id="leaderboard">
 
         </table>
+        <div id="panel">
+          <div id="startbtn">Start</div>
+          <div id="share">
+            <input type="text" readonly id="sharelink">
+            <input type="button" value="Kopiuj link" id="sharebtn">
+          </div>
+        </div>
       </div>
-      <div class="box main">
+      <div class="column main">
         <canvas id="c" height="700" width="700"></canvas>
       </div>
-      <div class="box right" id="chatbox">
-        <textarea id="chat" readonly></textarea>
-        <br>
-        <input id="chatinput"><button onclick="sendmsg()">Wyślij</button>
+      <div class="column right" id="chatbox">
+        <div id="chat"></div>
+        <div id="chattext">
+          <input type="text" id="chatinput">
+          <input type="button" value="Wyślij" id="chatbtn" onclick="sendmsg()">
+        </div>
       </div>
     </div>
+
     <div id="mojekarty"></div>
-    <div class="gray" id="choosecolorback">
-      <div class="box" id="choosecolor">
-        <p>Wybierz kolor:</p>
-        <input type="radio" name="kolor" value="blue"><span style="color:blue;">Niebieski</span><br>
-        <input type="radio" name="kolor" value="green"><span style="color:green;">Zielony</span><br>
-        <input type="radio" name="kolor" value="yellow"><span style="color:darkgoldenrod;">Żółty</span><br>
-        <input type="radio" name="kolor" value="red"><span style="color:red;">Czerwony</span><br>
-        <button id="choosecolorbtn">Potwierdź</button>
-      </div>
+
+    <div class="overlay" id="choosecolorback">
+      <form class="overlayalert" id="choosecolor">
+        <h3>Wybierz kolor:</h3>
+        <label class="choosecolorbtn redbtn">
+          <input type="radio" name="kolor" value="red">
+          Czerwony
+        </label>
+        <label class="choosecolorbtn bluebtn">
+          <input type="radio" name="kolor" value="blue">
+          Niebieski
+        </label>
+        <label class="choosecolorbtn yellowbtn">
+          <input type="radio" name="kolor" value="yellow">
+          Żółty
+        </label>
+        <label class="choosecolorbtn greenbtn">
+          <input type="radio" name="kolor" value="green">
+          Zielony
+        </label>
+      </form>
     </div>
-
-
 
     <script src="script.js" charset="utf-8"></script>
   </body>

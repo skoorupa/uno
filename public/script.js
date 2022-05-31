@@ -13,7 +13,7 @@ var room = {
 if (room.roomid) document.title = room.roomid + " - graj UNO";
 
 const cardbox = document.getElementById("mojekarty");
-const playersbox = document.getElementById("players");
+const leaderboardbox = document.getElementById("leaderboard");
 
 const sounds = {};
 sounds.message = new Audio("sounds/message.mp3");
@@ -41,9 +41,10 @@ connection.onmessage = function (event) {
       updateUI(msg);
       break;
     case "newmessage":
-      if (msg.notify)
-        sounds.message.play()
-      document.getElementById("chat").value += msg.content;
+      var chat = document.getElementById("chat");
+      chat.innerHTML += msg.content+"<br>";
+      chat.scrollTo(0, chat.scrollHeight);
+      if (msg.notify) sounds.message.play()
       break;
     case "joinedtoroom":
       prepare(msg);
@@ -81,20 +82,28 @@ connection.onmessage = function (event) {
 
 connect();
 
-function prepare(msg) {
-  playersbox.innerHTML = "";
-  cardbox.innerHTML = "";
+// share link
 
-  var invitetxt = document.createElement("span");
-  invitetxt.innerHTML = "zaproś znajomych:";
-  var inviteinput = document.createElement("input");
-  inviteinput.value = location.origin+"/?inviteid="+room.roomid;
-  inviteinput.setAttribute("readonly","readonly");
-  inviteinput.addEventListener("click", function () {
-    this.select();
-  });
-  invitetxt.appendChild(inviteinput);
-  cardbox.appendChild(invitetxt);
+var sharelink = document.getElementById("sharelink")
+var sharebtn = document.getElementById("sharebtn")
+sharelink.value = location.origin+"/?inviteid="+room.roomid;
+sharelink.addEventListener("click", function () {
+  this.select();
+});
+sharebtn.addEventListener("click", function () {
+  navigator.clipboard.writeText(location.origin+"/?inviteid="+room.roomid);
+});
+
+// start btn
+
+var startbtn = document.getElementById("startbtn");
+startbtn.addEventListener("click", function () {
+  connection.send('{"type":"startgame"}');
+});
+
+function prepare(msg) {
+  leaderboardbox.innerHTML = "";
+  cardbox.innerHTML = "";
 
   msg.players.forEach(function (item, index) {
     var trow = document.createElement("tr");
@@ -102,15 +111,10 @@ function prepare(msg) {
 
     tnickname.innerHTML = item;
     trow.appendChild(tnickname);
-    playersbox.appendChild(trow);
+    leaderboardbox.appendChild(trow);
   });
   if (msg.admin == room.username) {
-    var startbtn = document.createElement("button");
-    startbtn.innerHTML = "Start";
-    startbtn.addEventListener("click", function () {
-      connection.send('{"type":"startgame"}');
-    });
-    cardbox.appendChild(startbtn);
+    startbtn.style.display = "block";
   }
 }
 
@@ -137,6 +141,10 @@ function connect() {
       }));
   }
 }
+
+//
+// CANVAS
+//
 
 var c = document.getElementById("c");
 ctx = c.getContext("2d");
@@ -180,7 +188,7 @@ function updateUI(content) {
   //   ctx.lineTo(miejsca[i][0], miejsca[i][1]);
 
   // ctx.stroke();
-  playersbox.innerHTML = "";
+  leaderboardbox.innerHTML = "";
 
   var myplayerindex = content.players.findIndex(function (obj) {
     return obj.nickname == room.username;
@@ -197,7 +205,7 @@ function updateUI(content) {
     tcards.innerHTML = item.cardsquantity;
     trow.appendChild(tnickname);
     trow.appendChild(tcards);
-    playersbox.appendChild(trow);
+    leaderboardbox.appendChild(trow);
 
     ctx.fillStyle = "black";
     ctx.fillText(item.nickname, miejsca[places[index]][0], miejsca[places[index]][1]+miejsca[places[index]][2]);
@@ -264,7 +272,13 @@ function updateUI(content) {
   });
 
   if (content.lastcard.colorchange) {
-    ctx.fillStyle = content.lastcard.newcolor;
+    var colors = {
+      "red": "#ff0000",
+      "blue": "#256fa1",
+      "yellow": "#c8be2e",
+      "green": "#25a049"
+    }
+    ctx.fillStyle = colors[content.lastcard.newcolor];
     ctx.fillRect(700/2-15-10, 700/2-25-10, 50, 70);
   }
 
@@ -324,19 +338,15 @@ function wybierzkarte(card) {
 }
 
 function pokazwyborkart(card) {
-  document.getElementById('choosecolor').style.display = "block";
   document.getElementById('choosecolorback').style.display = "block";
-  document.getElementById('choosecolorbtn').addEventListener("click", function () {
+  document.getElementById('choosecolor').addEventListener("change", function () {
     wybierzkolor(card);
-  });
+  }, {once: true});
 }
 
 function wybierzkolor(card) {
-  document.getElementsByName("kolor").forEach(function (item, index) {
-    if(item.checked) card.newcolor = item.value;
-  });
+  card.newcolor = document.getElementById('choosecolor').kolor.value;
   wybierzkarte(card);
-  document.getElementById('choosecolor').style.display = "none";
   document.getElementById('choosecolorback').style.display = "none";
 }
 
@@ -346,6 +356,7 @@ document.getElementById("chatinput").addEventListener("keydown", Event=>{
 
 function sendmsg() {
   var cinput = document.getElementById("chatinput");
+  if (cinput.value == "") return;
   if (room.roomid && room.username) {
     connection.send(JSON.stringify({
       "type": "chatmessage",

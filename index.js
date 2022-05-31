@@ -248,6 +248,7 @@ wss.on('connection', function connection(ws) {
                 });
                 break;
             case "startgame":
+                if (!user.nickname) return;
                 console.log(`->${user.roomid}: ${user.nickname} tries to start game`);
                 room = game.rooms[user.roomid];
                 if (room.isStarted) return;
@@ -536,8 +537,7 @@ wss.on('connection', function connection(ws) {
                 }
                 break;
             case "chatmessage":
-                if (!user.roomid) return;
-                // fs.readFile("pokoje/"+user.roomid+"chat.txt", function (err, data) {=
+                if (!user.roomid || msg.content == "") return;
                 var newcontent = '\n'+user.nickname+": "+msg.content;
                 game.rooms[user.roomid].players.forEach(function (player, index) {
                     player.send(JSON.stringify({
@@ -546,8 +546,6 @@ wss.on('connection', function connection(ws) {
                     "notify": true
                     }));
                 });
-                // fs.writeFileSync("pokoje/"+user.roomid+"chat.txt", content+newcontent);
-                // });
                 break;
             case "pong":
                 setTimeout(() => {
@@ -569,12 +567,6 @@ wss.on('connection', function connection(ws) {
 wss.on('close', function close() {
     console.log('disconnected');
 });
-
-function sendall(y,x) {
-    y.forEach(function (u, index) {
-        u.send(x);
-    });
-}
 
 function getnextplayer(room) {
     if (room.direction == "cw") {
