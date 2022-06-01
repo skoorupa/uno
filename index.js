@@ -57,7 +57,7 @@ app.get("/newroom/:nickname", function (req,res) {
 
     game.rooms[id] = new Room(id);
     res.redirect("/play.html?room="+id+"&nickname="+nickname);
-    console.log(room);
+    console.log(game.rooms[id]);
 
     setTimeout(()=>{
         if (typeof game.rooms[id] != "undefined") {
