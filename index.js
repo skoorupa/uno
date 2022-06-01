@@ -55,24 +55,6 @@ app.get("/newroom/:nickname", function (req,res) {
         return;
     }
 
-    // var room = {
-    //     players: [],
-    //     roomid: id,
-    //     idcounter: 0,
-    //     cards: [],
-    //     cardsused: [],
-    //     cardsstack: [],
-    //     lastcard: {},
-    //     ingame: 0,
-    //     isStarted: false,
-    //     movemakes: {},
-    //     direction: "cw",
-    //     adding: 0,
-    //     scoreboard: [],
-    //     admin: {}
-    // };
-
-    // game.rooms[id] = room;
     game.rooms[id] = new Room(id);
     res.redirect("/play.html?room="+id+"&nickname="+nickname);
     console.log(room);
