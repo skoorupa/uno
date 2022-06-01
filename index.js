@@ -33,6 +33,26 @@ class Room {
         this.scoreboard = [];
         this.admin = {};
     }
+
+   addUser(ws, nickname) {
+        if (this.isStarted || !nickname.replace(/ /g, "")) return;
+        if (this.players.find(function (obj) {
+            return obj.nickname == nickname;
+        })) {
+            console.log(`->${this.roomid}: nickname repeated (${nickname})`);
+
+            return {
+                "type": "nickzajety"
+            };
+        }
+        console.log(`->${this.roomid}: new player: ${nickname}`);
+        ws.nickname = nickname;
+        ws.roomid = this.roomid;
+        ws.id = this.idcounter;
+        this.idcounter++;
+
+        this.players.push(ws);
+   }
 }
 
 // 
@@ -114,28 +134,31 @@ wss.on('connection', function connection(ws) {
         var user = this;
         switch (msg.type) {
             case "joinedtoroom":
-                if (!game.rooms[msg.roomid] || game.rooms[msg.roomid].isStarted || !msg.content.replace(/ /g, "")) return;
-                if (game.rooms[msg.roomid].players.find(function (obj) {
-                    return obj.nickname == msg.content;
-                })) {
-                    user.send(JSON.stringify({
-                        "type": "nickzajety"
-                    }));
-                    console.log("->"+msg.roomid+": nickname repeated");
-                    return;
-                }
-                console.log("->"+msg.roomid+": new player "+msg.content);
+                // if (!game.rooms[msg.roomid] || game.rooms[msg.roomid].isStarted || !msg.content.replace(/ /g, "")) return;
+                // if (game.rooms[msg.roomid].players.find(function (obj) {
+                //     return obj.nickname == msg.content;
+                // })) {
+                //     user.send(JSON.stringify({
+                //         "type": "nickzajety"
+                //     }));
+                //     console.log("->"+msg.roomid+": nickname repeated");
+                //     return;
+                // }
+                // console.log("->"+msg.roomid+": new player "+msg.content);
                 room = game.rooms[msg.roomid];
+                room.addUser(user, msg.content);
 
-                user.nickname = msg.content;
-                user.roomid = msg.roomid;
-                user.id = room.idcounter;
-                room.idcounter++;
+                // user.nickname = msg.content;
+                // user.roomid = msg.roomid;
+                // user.id = room.idcounter;
+                // room.idcounter++;
 
                 // user.isAlive = true;
                 // user.on("pong", function () {
                 //   this.isAlive = true;
                 // });
+
+
 
                 user.on("close", function () {
                     console.log("->"+this.roomid+": "+this.nickname+" has left");
@@ -224,11 +247,9 @@ wss.on('connection', function connection(ws) {
                     }));
                 }, 30000);
 
-                room.players.push(user);
+                // room.players.push(user);
                 if (Object.keys(room.admin).length===0)
                     room.admin = user;
-
-                console.log("admin::::"+room.admin.nickname);
 
                 var playerinfos = [];
                 room.players.forEach(function (player, index) {
