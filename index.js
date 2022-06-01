@@ -16,6 +16,25 @@ let game = {
     maxrooms:20
 };
 
+class Room {
+    constructor(id) {
+        this.players = [];
+        this.roomid = id;
+        this.idcounter = 0;
+        this.cards = uno.init();
+        this.cardsused = [];
+        this.cardsstack = [];
+        this.lastcard = {};
+        this.ingame = 0;
+        this.isStarted = false;
+        this.movemakes = {};
+        this.direction = "cw";
+        this.adding = 0;
+        this.scoreboard = [];
+        this.admin = {};
+    }
+}
+
 // 
 // EXPRESS
 // 
@@ -36,24 +55,25 @@ app.get("/newroom/:nickname", function (req,res) {
         return;
     }
 
-    var room = {
-        players: [],
-        roomid: id,
-        idcounter: 0,
-        cards: [],
-        cardsused: [],
-        cardsstack: [],
-        lastcard: {},
-        ingame: 0,
-        isStarted: false,
-        movemakes: {},
-        direction: "cw",
-        adding: 0,
-        scoreboard: [],
-        admin: {}
-    };
+    // var room = {
+    //     players: [],
+    //     roomid: id,
+    //     idcounter: 0,
+    //     cards: [],
+    //     cardsused: [],
+    //     cardsstack: [],
+    //     lastcard: {},
+    //     ingame: 0,
+    //     isStarted: false,
+    //     movemakes: {},
+    //     direction: "cw",
+    //     adding: 0,
+    //     scoreboard: [],
+    //     admin: {}
+    // };
 
-    game.rooms[id] = room;
+    // game.rooms[id] = room;
+    game.rooms[id] = new Room(id);
     res.redirect("/play.html?room="+id+"&nickname="+nickname);
     console.log(room);
 
