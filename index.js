@@ -149,6 +149,9 @@ class Room {
             }
     }
 
+    isAdmin(user) {
+        return user.nickname == this.admin.nickname;
+    }
 }
 
 // 
