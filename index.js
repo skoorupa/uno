@@ -256,7 +256,7 @@ wss.on('connection', function connection(ws) {
                 // var filecontent = JSON.parse(data.toString());
                 if (user.nickname == room.admin.nickname) {
                     console.log("->"+user.roomid+": starting game");
-                    room.cards = [];
+                    room.cards = uno.init();
                     room.cardsused = [];
                     room.cardsstack = [];
                     room.lastcard = {};
@@ -267,7 +267,6 @@ wss.on('connection', function connection(ws) {
                     room.adding = 0;
                     room.scoreboard = [];
 
-                    room.cards = uno.init();
                     var lastcard = room.cards[random(19 * 4 - 1)];
 
                     room.cardsstack.push(lastcard);
