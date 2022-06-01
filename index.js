@@ -152,6 +152,53 @@ class Room {
     isAdmin(user) {
         return user.nickname == this.admin.nickname;
     }
+
+    start() {
+        if (this.isStarted) return;
+        this.cards = uno.init();
+        this.cardsused = [];
+        this.cardsstack = [];
+        this.lastcard = {};
+        this.ingame = this.players.length;
+        this.movemakes = {};
+        this.direction = "cw";
+        this.adding = 0;
+        this.scoreboard = [];
+
+        var firstcard = this.cards[random(19 * 4)];
+        this.cardsstack.push(firstcard);
+        this.cards.splice(
+            this.cards.indexOf(firstcard),
+        1);
+
+        this.mmpos = random(this.players.length);
+        var firstplayer = this.players[this.mmpos];
+        console.log("->"+this.roomid+": first move belongs to "+firstplayer.nickname);
+
+        this.players.forEach(player => {
+            // draw cards for everyone
+            var playercards = [];
+            for (var i = 0; i < 7; i++) {
+                var newcard = this.cards[random(this.cards.length)];
+                playercards.push(newcard);
+                this.cardsused.push(newcard);
+                this.cards.splice(
+                    this.cards.indexOf(newcard),
+                1);
+            }
+
+            player.isitmymove = false;
+            if (player.nickname == firstplayer.nickname) player.isitmymove = true;
+
+            player.cards = playercards;
+        });
+
+        this.lastcard = firstcard;
+        this.movemakes = firstplayer;
+        this.isStarted = true;
+
+        this.sendGameInfo();
+    }
 }
 
 // 
@@ -272,90 +319,97 @@ wss.on('connection', function connection(ws) {
                 console.log(`->${user.roomid}: ${user.nickname} tries to start game`);
                 room = game.rooms[user.roomid];
                 if (room.isStarted) return;
-
-                // var filecontent = JSON.parse(data.toString());
-                if (user.nickname == room.admin.nickname) {
-                    console.log("->"+user.roomid+": starting game");
-                    room.cards = uno.init();
-                    room.cardsused = [];
-                    room.cardsstack = [];
-                    room.lastcard = {};
-                    room.ingame = room.players.length;
-                    room.isStarted = false;
-                    room.movemakes = {};
-                    room.direction = "cw";
-                    room.adding = 0;
-                    room.scoreboard = [];
-
-                    var lastcard = room.cards[random(19 * 4)];
-
-                    room.cardsstack.push(lastcard);
-                    room.cards.splice(
-                        room.cards.indexOf(lastcard),
-                    1);
-                    room.mmpos = random(room.players.length)
-                    var firstplayer = room.players[room.mmpos];
-                    console.log("->"+user.roomid+": first move belongs to "+firstplayer.nickname);
-                    var playerinfos = [];
-
-                    room.players.forEach(function (player, index) {
-                    var playercards = [];
-                    for (var i = 0; i < 7; i++) {
-                        var newcard = room.cards[random(room.cards.length)];
-                        playercards.push(newcard);
-                        room.cardsused.push(newcard);
-                        room.cards.splice(
-                        room.cards.indexOf(newcard),
-                        1);
-                    }
-                    // filecontent.players.forEach(function (fileplayer, index) {
-                    //     if (player.nickname == fileplayer.nickname) { // ram == file
-                    //     fileplayer.cards = playercards;
-                    //     }
-                    // });
-
-                    player.isitmymove = false;
-                    if (player.nickname == firstplayer.nickname) player.isitmymove = true;
-
-                    player.cards = playercards;
-                    playerinfos.push({nickname:player.nickname, cardsquantity:player.cards.length});
-                    });
-
-                    room.lastcard = lastcard;
-                    room.movemakes = firstplayer;
-                    room.direction = "cw";
-                    room.ingame = room.players.length;
-                    room.isStarted = true;
-
-                    // filecontent.cards = game.rooms[user.roomid].cards;
-                    // filecontent.cardsused = game.rooms[user.roomid].cardsused;
-                    // filecontent.lastcard = lastcard;
-                    // filecontent.movemakes = firstplayer.nickname;
-                    // filecontent.direction = "cw";
-                    // filecontent.ingame = game.rooms[user.roomid].players.length;
-                    // filecontent.isStarted = true;
-
-                    room.players.forEach(function (player, index) {
-                    player.send(JSON.stringify({
-                        "type": "next",
-                        "yourcards": player.cards,
-                        "lastcard": room.lastcard,
-                        "movemakes": room.movemakes.nickname,
-                        "direction": "cw", // clockwise
-                        "isitmymove": player.isitmymove,
-                        "players": playerinfos
-                    }));
-                    player.send(JSON.stringify({
+                if (room.isAdmin(user)) {
+                    room.start();
+                    room.sendToEveryPlayer({
                         "type":"newmessage",
-                        "content": "\nrozpoczęto rozgrywkę"
-                    }));
-                    });
+                        "content": "rozpoczęto rozgrywkę"
+                    })
+                }
 
-                    // filecontent.players.forEach(function (item, index) {
-                    //   item.cards =
-                    // });
-                    // fs.writeFileSync("pokoje/"+user.roomid+".json", JSON.stringify(filecontent));
-                } else console.log("->"+user.roomid+": falstart "+user.nickname);
+                // // var filecontent = JSON.parse(data.toString());
+                // if (room.isAdmin(user)) {
+                //     console.log("->"+user.roomid+": starting game");
+                //     room.cards = uno.init();
+                //     room.cardsused = [];
+                //     room.cardsstack = [];
+                //     room.lastcard = {};
+                //     room.ingame = room.players.length;
+                //     room.isStarted = false;
+                //     room.movemakes = {};
+                //     room.direction = "cw";
+                //     room.adding = 0;
+                //     room.scoreboard = [];
+
+                //     var lastcard = room.cards[random(19 * 4)];
+
+                //     room.cardsstack.push(lastcard);
+                //     room.cards.splice(
+                //         room.cards.indexOf(lastcard),
+                //     1);
+                //     room.mmpos = random(room.players.length)
+                //     var firstplayer = room.players[room.mmpos];
+                //     console.log("->"+user.roomid+": first move belongs to "+firstplayer.nickname);
+                //     var playerinfos = [];
+
+                //     room.players.forEach(function (player, index) {
+                //         var playercards = [];
+                //         for (var i = 0; i < 7; i++) {
+                //             var newcard = room.cards[random(room.cards.length)];
+                //             playercards.push(newcard);
+                //             room.cardsused.push(newcard);
+                //             room.cards.splice(
+                //             room.cards.indexOf(newcard),
+                //         1);
+                //         }
+                //         // filecontent.players.forEach(function (fileplayer, index) {
+                //         //     if (player.nickname == fileplayer.nickname) { // ram == file
+                //         //     fileplayer.cards = playercards;
+                //         //     }
+                //         // });
+
+                //         player.isitmymove = false;
+                //         if (player.nickname == firstplayer.nickname) player.isitmymove = true;
+
+                //         player.cards = playercards;
+                //         playerinfos.push({nickname:player.nickname, cardsquantity:player.cards.length});
+                //     });
+
+                //     room.lastcard = lastcard;
+                //     room.movemakes = firstplayer;
+                //     room.direction = "cw";
+                //     room.ingame = room.players.length;
+                //     room.isStarted = true;
+
+                //     // filecontent.cards = game.rooms[user.roomid].cards;
+                //     // filecontent.cardsused = game.rooms[user.roomid].cardsused;
+                //     // filecontent.lastcard = lastcard;
+                //     // filecontent.movemakes = firstplayer.nickname;
+                //     // filecontent.direction = "cw";
+                //     // filecontent.ingame = game.rooms[user.roomid].players.length;
+                //     // filecontent.isStarted = true;
+
+                //     room.players.forEach(function (player, index) {
+                //     player.send(JSON.stringify({
+                //         "type": "next",
+                //         "yourcards": player.cards,
+                //         "lastcard": room.lastcard,
+                //         "movemakes": room.movemakes.nickname,
+                //         "direction": "cw", // clockwise
+                //         "isitmymove": player.isitmymove,
+                //         "players": playerinfos
+                //     }));
+                //     player.send(JSON.stringify({
+                //         "type":"newmessage",
+                //         "content": "\nrozpoczęto rozgrywkę"
+                //     }));
+                //     });
+
+                //     // filecontent.players.forEach(function (item, index) {
+                //     //   item.cards =
+                //     // });
+                //     // fs.writeFileSync("pokoje/"+user.roomid+".json", JSON.stringify(filecontent));
+                // } else console.log("->"+user.roomid+": falstart "+user.nickname);
                 // });
                 break;
             case "movemade":
