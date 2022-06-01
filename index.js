@@ -284,7 +284,7 @@ wss.on('connection', function connection(ws) {
                     room.adding = 0;
                     room.scoreboard = [];
 
-                    var lastcard = room.cards[random(19 * 4 - 1)];
+                    var lastcard = room.cards[random(19 * 4)];
 
                     room.cardsstack.push(lastcard);
                     room.cards.splice(
