@@ -34,7 +34,15 @@ class Room {
         this.admin = {};
     }
 
-   addUser(ws, nickname) {
+    get allNicknames() {
+        let result = [];
+        this.players.forEach(player => {
+            result.push(player.nickname);
+        });
+        return result;
+    }
+
+    addPlayer(ws, nickname) {
         if (this.isStarted || !nickname.replace(/ /g, "")) return;
         if (this.players.find(function (obj) {
             return obj.nickname == nickname;
@@ -52,7 +60,17 @@ class Room {
         this.idcounter++;
 
         this.players.push(ws);
-   }
+
+        if (Object.keys(this.admin).length===0)
+            this.admin = ws;
+    }
+
+    sendToEveryPlayer(msg) {
+       this.players.forEach(player => {
+           player.send(JSON.stringify(msg));
+       });
+    }
+
 }
 
 // 
@@ -134,31 +152,14 @@ wss.on('connection', function connection(ws) {
         var user = this;
         switch (msg.type) {
             case "joinedtoroom":
-                // if (!game.rooms[msg.roomid] || game.rooms[msg.roomid].isStarted || !msg.content.replace(/ /g, "")) return;
-                // if (game.rooms[msg.roomid].players.find(function (obj) {
-                //     return obj.nickname == msg.content;
-                // })) {
-                //     user.send(JSON.stringify({
-                //         "type": "nickzajety"
-                //     }));
-                //     console.log("->"+msg.roomid+": nickname repeated");
-                //     return;
-                // }
-                // console.log("->"+msg.roomid+": new player "+msg.content);
                 room = game.rooms[msg.roomid];
-                room.addUser(user, msg.content);
-
-                // user.nickname = msg.content;
-                // user.roomid = msg.roomid;
-                // user.id = room.idcounter;
-                // room.idcounter++;
+                var result = room.addPlayer(user, msg.content);
+                if (result) return user.send(JSON.stringify(result));
 
                 // user.isAlive = true;
                 // user.on("pong", function () {
                 //   this.isAlive = true;
                 // });
-
-
 
                 user.on("close", function () {
                     console.log("->"+this.roomid+": "+this.nickname+" has left");
@@ -248,26 +249,17 @@ wss.on('connection', function connection(ws) {
                 }, 30000);
 
                 // room.players.push(user);
-                if (Object.keys(room.admin).length===0)
-                    room.admin = user;
 
-                var playerinfos = [];
-                room.players.forEach(function (player, index) {
-                    playerinfos.push(player.nickname)
-                });
-                room.players.forEach(function (player, index) {
-                    player.send(JSON.stringify({
+                var playerinfos = room.allNicknames;
+                room.sendToEveryPlayer({
                     "type":"joinedtoroom",
                     "players": playerinfos,
                     "admin": room.admin.nickname
-                    }));
                 });
-                room.players.forEach(function (player, index) {
-                    player.send(JSON.stringify({
+                room.sendToEveryPlayer({
                     "type":"newmessage",
-                    "content": "\n"+user.nickname+" dołączył do pokoju",
+                    "content": `${user.nickname} dołączył do pokoju`,
                     "notify": true
-                    }));
                 });
                 break;
             case "startgame":
