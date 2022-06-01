@@ -66,7 +66,7 @@ app.get("/newroom/:nickname", function (req,res) {
                 console.log("removed room %s for idleness", id);
             }
         }
-    }, 30000);
+    }, 5000);
 });
 
 app.get("/getrooms", function (req,res) {
