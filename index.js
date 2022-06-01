@@ -42,6 +42,17 @@ class Room {
         return result;
     }
 
+    get nicknamesAndCards() {
+        let result = [];
+        this.players.forEach(player => {
+            if (player.cards)
+                result.push({nickname:player.nickname, cardsquantity:player.cards.length});
+            else
+                result.push({nickname:player.nickname, cardsquantity:0});
+        });
+        return result;
+    }
+
     addPlayer(ws, nickname) {
         if (this.isStarted || !nickname.replace(/ /g, "")) return;
         if (this.players.find(function (obj) {
@@ -69,6 +80,71 @@ class Room {
        this.players.forEach(player => {
            player.send(JSON.stringify(msg));
        });
+    }
+
+    sendGameInfo(type = "next", additional = {}) {
+        var a = {
+            "type": type,
+            "admin": this.admin,
+            "lastcard": this.lastcard,
+            "movemakes": this.movemakes.nickname,
+            "direction": this.direction,
+            "players": this.nicknamesAndCards
+        };
+
+        this.players.forEach(player => {
+            player.send(JSON.stringify({
+                ...a,
+                "yourcards": player.cards,
+                "isitmymove": player.isitmymove,
+                ...additional
+            }));
+        });
+    }
+
+    removePlayer(user) {
+        if (user.cards) this.cards.push(...user.cards);
+        this.players.splice(
+            this.players.indexOf(user),
+        1);
+            
+        // if removed user is an admin
+        if (user.nickname == this.admin.nickname && this.players.length) {
+            var r = random(this.players.length);
+            var newadmin = this.players[r];
+            this.sendToEveryPlayer({
+                "type": "newmessage",
+                "content": `${newadmin.nickname} zostaje adminem`
+            });
+        }
+
+        // if (this.isitmymove) {
+        //     this.nextplayer = getnextplayer(this);
+        // }
+
+        if (this.isStarted) {
+            this.sendGameInfo("playerhasquit", {
+                "who": user.nickname
+            });
+        } else {
+            this.sendToEveryPlayer({
+                "type":"joinedtoroom",
+                "players": this.allNicknames,
+                "admin": this.admin.nickname
+            });
+        }
+
+        this.sendToEveryPlayer({
+            "type":"newmessage",
+            "content": `${user.nickname} odszedł z pokoju`,
+            "notify": true
+        });
+
+        if (this.players)
+            if (!this.players[0]) {
+                game.rooms.splice(this, 1);
+                console.log("->"+this.roomid+": deleted (everyone has left)");
+            }
     }
 
 }
@@ -153,6 +229,8 @@ wss.on('connection', function connection(ws) {
         switch (msg.type) {
             case "joinedtoroom":
                 room = game.rooms[msg.roomid];
+                if (!room) return;
+
                 var result = room.addPlayer(user, msg.content);
                 if (result) return user.send(JSON.stringify(result));
 
@@ -163,82 +241,83 @@ wss.on('connection', function connection(ws) {
 
                 user.on("close", function () {
                     console.log("->"+this.roomid+": "+this.nickname+" has left");
-                    var whoquit = this.nickname;
-                    var roomid = this.roomid;
-                    var room = game.rooms[roomid];
-                    var playerinfos = [];
+                    room.removePlayer(this);
+                    // var whoquit = this.nickname;
+                    // var roomid = this.roomid;
+                    // var room = game.rooms[roomid];
+                    // var playerinfos = [];
 
-                    if (this.cards)
-                        this.cards.forEach(function (card, index) {
-                            room.cards.push(card);
-                        });
+                    // if (this.cards)
+                    //     this.cards.forEach(function (card, index) {
+                    //         room.cards.push(card);
+                    //     });
 
-                    if (room)
-                        room.players.splice(
-                            room.players.indexOf(this),
-                        1);
+                    // if (room)
+                    //     room.players.splice(
+                    //         room.players.indexOf(this),
+                    //     1);
 
-                    if (whoquit == room.admin.nickname && room.players.length) {
-                    var r = random(room.players.length);
-                    var newadmin = room.players[r];
-                    room.players.forEach(function (player, index) {
-                        player.send(JSON.stringify({
-                        "type":"newmessage",
-                        "content": "\n"+newadmin.nickname+" zostaje adminem"
-                        }));
-                    });
-                    }
+                    // if (whoquit == room.admin.nickname && room.players.length) {
+                    // var r = random(room.players.length);
+                    // var newadmin = room.players[r];
+                    // room.players.forEach(function (player, index) {
+                    //     player.send(JSON.stringify({
+                    //     "type":"newmessage",
+                    //     "content": "\n"+newadmin.nickname+" zostaje adminem"
+                    //     }));
+                    // });
+                    // }
 
-                    room.players.forEach(function (player, index) {
-                    if (player.cards)
-                        playerinfos.push({nickname:player.nickname, cardsquantity:player.cards.length});
-                    else
-                        playerinfos.push({nickname:player.nickname, cardsquantity:0});
-                    });
+                    // room.players.forEach(function (player, index) {
+                    //     if (player.cards)
+                    //         playerinfos.push({nickname:player.nickname, cardsquantity:player.cards.length});
+                    //     else
+                    //         playerinfos.push({nickname:player.nickname, cardsquantity:0});
+                    // });
 
-                    if (room) {
-                    if (room.isStarted) {
-                        room.players.forEach(function (player, index) {
-                        player.send(JSON.stringify({
-                            "type": "playerhasquit",
-                            "who": whoquit,
-                            "admin": room.admin,
-                            "yourcards": player.cards,
-                            "lastcard": room.lastcard,
-                            "movemakes": room.movemakes.nickname,
-                            "direction": room.direction,
-                            "isitmymove": player.isitmymove,
-                            "players": playerinfos
-                        }));
-                        });
-                    } else {
-                        var playerinfos = [];
-                        game.rooms[user.roomid].players.forEach(function (player, index) {
-                        playerinfos.push(player.nickname)
-                        });
-                        game.rooms[user.roomid].players.forEach(function (player, index) {
-                        player.send(JSON.stringify({
-                            "type":"joinedtoroom",
-                            "content": playerinfos,
-                            "admin": game.rooms[user.roomid].admin.nickname
-                        }));
-                        });
-                    }
+                    // if (room) {
+                    //     if (room.isStarted) {
+                    //         room.players.forEach(function (player, index) {
+                    //         player.send(JSON.stringify({
+                    //             "type": "playerhasquit",
+                    //             "who": whoquit,
+                    //             "admin": room.admin,
+                    //             "yourcards": player.cards,
+                    //             "lastcard": room.lastcard,
+                    //             "movemakes": room.movemakes.nickname,
+                    //             "direction": room.direction,
+                    //             "isitmymove": player.isitmymove,
+                    //             "players": playerinfos
+                    //         }));
+                    //         });
+                    //     } else {
+                    //         var playerinfos = [];
+                    //         game.rooms[user.roomid].players.forEach(function (player, index) {
+                    //             playerinfos.push(player.nickname)
+                    //         });
+                    //         game.rooms[user.roomid].players.forEach(function (player, index) {
+                    //         player.send(JSON.stringify({
+                    //             "type":"joinedtoroom",
+                    //             "content": playerinfos,
+                    //             "admin": game.rooms[user.roomid].admin.nickname
+                    //         }));
+                    //         });
+                    //     }
 
-                    game.rooms[user.roomid].players.forEach(function (player, index) {
-                        player.send(JSON.stringify({
-                        "type":"newmessage",
-                        "content": "\n"+whoquit+" odszedł z pokoju",
-                        "notify": true
-                        }));
-                    });
+                    //     game.rooms[user.roomid].players.forEach(function (player, index) {
+                    //         player.send(JSON.stringify({
+                    //         "type":"newmessage",
+                    //         "content": "\n"+whoquit+" odszedł z pokoju",
+                    //         "notify": true
+                    //         }));
+                    //     });
 
-                    if (game.rooms[roomid].players)
-                        if (!game.rooms[roomid].players[0]) {
-                        game.rooms.splice(game.rooms[roomid], 1);
-                        console.log("->"+user.roomid+": deleted (everyone has left)");
-                        }
-                    }
+                    //     if (game.rooms[roomid].players)
+                    //         if (!game.rooms[roomid].players[0]) {
+                    //         game.rooms.splice(game.rooms[roomid], 1);
+                    //         console.log("->"+user.roomid+": deleted (everyone has left)");
+                    //     }
+                    // }
                 });
 
                 setTimeout(() => {
@@ -248,12 +327,9 @@ wss.on('connection', function connection(ws) {
                     }));
                 }, 30000);
 
-                // room.players.push(user);
-
-                var playerinfos = room.allNicknames;
                 room.sendToEveryPlayer({
                     "type":"joinedtoroom",
-                    "players": playerinfos,
+                    "players": room.allNicknames,
                     "admin": room.admin.nickname
                 });
                 room.sendToEveryPlayer({
