@@ -348,6 +348,7 @@ function wybierzkolor(card) {
   card.newcolor = document.getElementById('choosecolor').kolor.value;
   wybierzkarte(card);
   document.getElementById('choosecolorback').style.display = "none";
+  document.getElementById('choosecolor').reset()
 }
 
 document.getElementById("chatinput").addEventListener("keydown", Event=>{
