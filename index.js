@@ -497,7 +497,8 @@ wss.on('connection', function connection(ws) {
                 break;
             case "chatmessage":
                 if (!user.roomid || msg.content == "") return;
-                game.rooms[user.roomid].sendToEveryPlayer({
+                var room = game.rooms[user.roomid];
+                room.sendToEveryPlayer({
                     "type": "newmessage",
                     "content": user.nickname+": "+msg.content,
                     "notify": true
