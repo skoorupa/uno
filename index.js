@@ -248,12 +248,13 @@ class Room {
     canBePlaced(card) {
         if (card.content != "skip" && this.blocking) return false;
         if (!card.add && this.adding) return false;
+        if (this.adding && this.lastcard.content == "add4color") return false;
 
         if (card.color == this.lastcard.color) return true;
         if (card.content == this.lastcard.content) return true;
         if (card.colorchange == true) return true;
         if (card.color == this.lastcard.newcolor) return true;
-        if (msg.card.add && this.lastcard.add) return true;
+        if (card.add && this.lastcard.add) return true;
         return false;
     }
 
