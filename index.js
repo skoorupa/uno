@@ -434,7 +434,6 @@ function random (limit) {
 }
 
 wss.on('connection', function connection(ws) {
-    allclients[allclients.length] = ws;
     ws.on('message', function (message) {
         var msg;
         try {
@@ -519,8 +518,10 @@ wss.on('connection', function connection(ws) {
                 console.log("unknown message: "+msg.type);
         }
     });
+    
+    allclients[allclients.length] = ws;
     allclients[allclients.length-1].on('error', function(e){
-      allclients.splice(allclients.indexOf(this),1);
+        allclients.splice(allclients.indexOf(this),1);
     });
 });
   
