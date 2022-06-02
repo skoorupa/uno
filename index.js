@@ -374,7 +374,7 @@ class Room {
 app.get("/newroom/:nickname", function (req,res) {
     var nickname = req.params["nickname"];
     // create new room's id
-    var id = 0;
+    var id = 1;
     var roomids = [];
     game.rooms.forEach(room=>{roomids.push(room.roomid)});
     roomids = roomids.sort();
@@ -382,7 +382,7 @@ app.get("/newroom/:nickname", function (req,res) {
         if(id==x)id++
     });
 
-    if (id >= game.maxrooms) {
+    if (id > game.maxrooms) {
         res.send("nope"); // too many rooms
         return;
     }
