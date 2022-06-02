@@ -269,6 +269,9 @@ class Room {
                 case "wybierzkarte":
                     this.placeCard(user, msg.card)
                     break;
+                default:
+                    console.log("nie ma takiej wartości msg.content jak "+msg.content);
+                    return;
             }
 
             // debug purposes - check if amount of cards is correct
