@@ -115,6 +115,8 @@ function prepare(msg) {
   });
   if (msg.admin == room.username) {
     startbtn.style.display = "block";
+  } else {
+    startbtn.style.display = "none";
   }
 }
 
