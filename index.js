@@ -259,16 +259,21 @@ class Room {
     }
 
     move(user, msg) {
+        var self = this;
+        function next() {
+            self.goToNextPlayer();
+            console.log("move makes:"+self.movemakes.nickname);
+            if (self.isStarted) {
+                self.sendGameInfo();
+            }
+        }
+        
         if (user.nickname != this.movemakes.nickname) return;
         if (this.blocking && msg.card.content != "skip" && msg.content == "dobierzkarte") {
             user.block = this.blocking-1;
             this.blocking = 0;
 
-            this.goToNextPlayer();
-            console.log("move makes:"+this.movemakes.nickname);
-            if (this.isStarted) {
-                this.sendGameInfo();
-            }
+            next();
         } else if (
             this.canBePlaced(msg.card) ||
             msg.content == "dobierzkarte"
@@ -306,12 +311,7 @@ class Room {
                 console.log("->"+user.roomid+": !!!!!!!!!!");
 
             // end of debug
-
-            this.goToNextPlayer();
-            console.log("move makes:"+this.movemakes.nickname);
-            if (this.isStarted) {
-                this.sendGameInfo();
-            }
+            next();
         }
     }
 
