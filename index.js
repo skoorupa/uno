@@ -53,7 +53,7 @@ class Room {
         return result;
     }
 
-    addPlayer(ws, nickname) {
+    addPlayer(ws, nickname = "") {
         if (this.isStarted || !nickname.replace(/ /g, "")) return;
         if (this.players.find(function (obj) {
             return obj.nickname == nickname;
