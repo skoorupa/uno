@@ -13,7 +13,14 @@ let game = {
             // danejakies: ":OOO"
         // }
     ],
-    maxrooms:20
+    maxrooms:20,
+    getRoom: function (id) {
+        return this.rooms.find(room=>{
+            if (room)
+                return room.roomid == id
+            else return false;
+        })
+    }
 };
 
 class Room {
@@ -151,8 +158,8 @@ class Room {
         }
         
     remove() {
+        console.log(`->${this.roomid}: deleted (everyone has left) (${game.rooms.indexOf(this)})`);
         game.rooms.splice(game.rooms.indexOf(this),1);
-        console.log("->"+this.roomid+": deleted (everyone has left)");
     }
 
     isAdmin(user) {
@@ -393,14 +400,15 @@ app.get("/newroom/:nickname", function (req,res) {
         return;
     }
 
-    game.rooms[id] = new Room(id);
+    // game.rooms[id] = new Room(id);
+    var room = new Room(id);
+    game.rooms.push(room);
     res.redirect("/play.html?room="+id+"&nickname="+nickname);
-    console.log(game.rooms[id]);
 
     setTimeout(()=>{
-        if (typeof game.rooms[id] != "undefined") {
-            if (!game.rooms[id].players) {
-                game.rooms.splice(id);
+        if (typeof room != "undefined") {
+            if (!room.players) {
+                room.remove();
                 console.log("removed room %s for idleness", id);
             }
         }
@@ -421,10 +429,14 @@ app.get("/getrooms", function (req,res) {
 app.get("/joinroom/:id/:nickname", function (req,res) {
     var id = req.params["id"];
     var nickname = req.params["nickname"];
-    if (typeof game.rooms[id] != "undefined")
-        res.redirect("/play.html?room="+id+"&nickname="+nickname);
-    else
+    var room = game.getRoom(id);
+    console.log(game.rooms);
+    if (typeof room == "undefined")
         res.send("Nie ma pokoju o nr "+id);
+    else if (room.isStarted)
+        res.send("W pokoju nr "+id+"toczy się już rozgrywka");
+    else
+        res.redirect("/play.html?room="+id+"&nickname="+nickname);
 });
 
 // 
@@ -451,7 +463,7 @@ wss.on('connection', function connection(ws) {
         var user = this;
         switch (msg.type) {
             case "joinedtoroom":
-                room = game.rooms[msg.roomid];
+                var room = game.getRoom(msg.roomid);
                 if (!room) return;
 
                 var result = room.addPlayer(user, msg.content);
@@ -488,7 +500,7 @@ wss.on('connection', function connection(ws) {
             case "startgame":
                 if (!user.nickname) return;
                 console.log(`->${user.roomid}: ${user.nickname} tries to start game`);
-                room = game.rooms[user.roomid];
+                var room = game.getRoom(user.roomid);
                 if (room.isStarted) return;
                 if (room.isAdmin(user)) {
                     room.start();
@@ -500,13 +512,13 @@ wss.on('connection', function connection(ws) {
                 break;
             case "movemade":
                 if (!user.nickname) return;
-                var room = game.rooms[user.roomid];
+                var room = game.getRoom(user.roomid);
                 if (!msg.card) msg.card = {};
                 room.move(user, msg);
                 break;
             case "chatmessage":
                 if (!user.roomid || msg.content == "") return;
-                var room = game.rooms[user.roomid];
+                var room = game.getRoom(user.roomid);
                 room.sendToEveryPlayer({
                     "type": "newmessage",
                     "content": user.nickname+": "+msg.content,
