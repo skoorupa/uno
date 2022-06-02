@@ -524,23 +524,6 @@ wss.on('close', function close() {
     console.log('disconnected');
 });
 
-function getnextplayer(room) {
-    if (room.direction == "cw") {
-        room.mmpos++;
-        if (room.mmpos >= room.players.length)
-            room.mmpos = 0;
-    } else {
-        room.mmpos--;
-        if (room.mmpos < 0)
-            room.mmpos = room.players.length-1;
-    }
-
-    if (room.players[room.mmpos].cards.length == 0 && room.cardsused != 0)
-        return getnextplayer(room)
-    else
-        return room.players[room.mmpos];
-}
-
 app.use(express.static('public'));
 
 const server = app.listen(port, function(err) {
