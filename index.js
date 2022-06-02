@@ -144,9 +144,15 @@ class Room {
 
         if (this.players)
             if (!this.players[0]) {
-                game.rooms.splice(this, 1);
-                console.log("->"+this.roomid+": deleted (everyone has left)");
+                this.remove();
+                // game.rooms.splice(this, 1);
+                // console.log("->"+this.roomid+": deleted (everyone has left)");
             }
+        }
+        
+    remove() {
+        game.rooms.splice(game.rooms.indexOf(this),1);
+        console.log("->"+this.roomid+": deleted (everyone has left)");
     }
 
     isAdmin(user) {
@@ -405,7 +411,7 @@ app.get("/getrooms", function (req,res) {
     // console.log(game.rooms);
     var roomlist = [];
     game.rooms.forEach((room)=>{
-        if (!room.isStarted)
+        if (!room.isStarted && typeof room != "undefined")
             roomlist.push({id: room.roomid, host: room.admin.nickname});
     });
     
@@ -493,6 +499,7 @@ wss.on('connection', function connection(ws) {
                 }
                 break;
             case "movemade":
+                if (!user.nickname) return;
                 var room = game.rooms[user.roomid];
                 if (!msg.card) msg.card = {};
                 room.move(user, msg);
