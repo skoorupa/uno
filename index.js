@@ -497,13 +497,10 @@ wss.on('connection', function connection(ws) {
                 break;
             case "chatmessage":
                 if (!user.roomid || msg.content == "") return;
-                var newcontent = '\n'+user.nickname+": "+msg.content;
-                game.rooms[user.roomid].players.forEach(function (player, index) {
-                    player.send(JSON.stringify({
+                game.rooms[user.roomid].sendToEveryPlayer({
                     "type": "newmessage",
-                    "content": newcontent,
+                    "content": user.nickname+": "+msg.content,
                     "notify": true
-                    }));
                 });
                 break;
             case "pong":
