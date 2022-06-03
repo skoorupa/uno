@@ -101,6 +101,8 @@ class Room {
         };
 
         this.players.forEach(player => {
+
+            // weird bug to be fixed
             var yourcards = player.cards;
             var isitmymove = player.isitmymove;
             player.send(JSON.stringify({
