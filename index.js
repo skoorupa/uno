@@ -90,6 +90,15 @@ class Room {
     }
 
     sendGameInfo(_type = "next", additional = {}) {
+        var self = this;
+        // var a = {
+        //     "type": _type,
+        //     "admin": self.admin,
+        //     "lastcard": self.lastcard,
+        //     "movemakes": self.movemakes.nickname,
+        //     "direction": self.direction,
+        //     "players": self.nicknamesAndCards
+        // };
 
         this.players.forEach(function(player) {
             // weird bug to be fixed
@@ -97,11 +106,11 @@ class Room {
             var isitmymove = player.isitmymove;
             player.send(JSON.stringify({
                 "type": _type,
-                "admin": this.admin.nickname,
-                "lastcard": this.lastcard,
-                "movemakes": this.movemakes.nickname,
-                "direction": this.direction,
-                "players": this.nicknamesAndCards,
+                "admin": self.admin.nickname,
+                "lastcard": self.lastcard,
+                "movemakes": self.movemakes.nickname,
+                "direction": self.direction,
+                "players": self.nicknamesAndCards,
                 "yourcards": yourcards,
                 "isitmymove": isitmymove,
                 ...additional
