@@ -101,10 +101,12 @@ class Room {
         };
 
         this.players.forEach(player => {
+            var yourcards = player.cards;
+            var isitmymove = player.isitmymove;
             player.send(JSON.stringify({
                 ...a,
-                "yourcards": player.cards,
-                "isitmymove": player.isitmymove,
+                "yourcards": yourcards,
+                "isitmymove": isitmymove,
                 ...additional
             }));
         });
