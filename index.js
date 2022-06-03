@@ -100,7 +100,7 @@ class Room {
             "players": self.nicknamesAndCards
         };
 
-        this.players.forEach(player => {
+        this.players.forEach(function(player) {
 
             // weird bug to be fixed
             var yourcards = player.cards;
