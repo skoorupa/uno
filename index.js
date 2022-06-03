@@ -90,25 +90,21 @@ class Room {
     }
 
     sendGameInfo(_type = "next", additional = {}) {
-        var self = this;
-        var a = {
-            "type": _type,
-            "admin": self.admin,
-            "lastcard": self.lastcard,
-            "movemakes": self.movemakes.nickname,
-            "direction": self.direction,
-            "players": self.nicknamesAndCards
-        };
 
         this.players.forEach(function(player) {
             // weird bug to be fixed
             var yourcards = player.cards;
             var isitmymove = player.isitmymove;
             player.send(JSON.stringify({
-                ...a
-                // "yourcards": yourcards,
-                // "isitmymove": isitmymove,
-                // ...additional
+                "type": _type,
+                "admin": this.admin.nickname,
+                "lastcard": this.lastcard,
+                "movemakes": this.movemakes.nickname,
+                "direction": this.direction,
+                "players": this.nicknamesAndCards,
+                "yourcards": yourcards,
+                "isitmymove": isitmymove,
+                ...additional
             }));
         });
     }
