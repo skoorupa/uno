@@ -105,10 +105,10 @@ class Room {
             var yourcards = player.cards;
             var isitmymove = player.isitmymove;
             player.send(JSON.stringify({
-                ...a,
-                "yourcards": yourcards,
-                "isitmymove": isitmymove,
-                ...additional
+                ...a
+                // "yourcards": yourcards,
+                // "isitmymove": isitmymove,
+                // ...additional
             }));
         });
     }
