@@ -90,13 +90,14 @@ class Room {
     }
 
     sendGameInfo(type = "next", additional = {}) {
+        var self = this;
         var a = {
             "type": type,
-            "admin": this.admin,
-            "lastcard": this.lastcard,
-            "movemakes": this.movemakes.nickname,
-            "direction": this.direction,
-            "players": this.nicknamesAndCards
+            "admin": self.admin,
+            "lastcard": self.lastcard,
+            "movemakes": self.movemakes.nickname,
+            "direction": self.direction,
+            "players": self.nicknamesAndCards
         };
 
         this.players.forEach(player => {
@@ -375,7 +376,7 @@ class Room {
             this.cardsused.indexOf(card),
         1);
 
-        if (this.adding && card.type != "add2" && card.type != "add4color") {
+        if (this.adding && card.type != "add2") {
             this.drawCard(user);
         }
     }
