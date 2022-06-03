@@ -89,10 +89,10 @@ class Room {
        });
     }
 
-    sendGameInfo(type = "next", additional = {}) {
+    sendGameInfo(_type = "next", additional = {}) {
         var self = this;
         var a = {
-            "type": type,
+            "type": _type,
             "admin": self.admin,
             "lastcard": self.lastcard,
             "movemakes": self.movemakes.nickname,
@@ -101,7 +101,6 @@ class Room {
         };
 
         this.players.forEach(function(player) {
-
             // weird bug to be fixed
             var yourcards = player.cards;
             var isitmymove = player.isitmymove;
