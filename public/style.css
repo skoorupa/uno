@@ -48,6 +48,7 @@ body {
 /* start */
 
 #startbtn {
+  display: none;
   background: linear-gradient(0deg, rgba(36,68,40,1) 0%, rgba(70,105,66,1) 50%, rgba(141,200,135,1) 100%);
   width: 100%;
   max-height: 100px;

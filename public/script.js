@@ -47,7 +47,7 @@ connection.onmessage = function (event) {
       if (msg.notify) sounds.message.play()
       break;
     case "joinedtoroom":
-      prepare(msg);
+      updatePlayers(msg);
       break;
     case "playerhasquit":
       updateUI(msg);
@@ -56,7 +56,7 @@ connection.onmessage = function (event) {
       alert("Ten nick jest już zajęty.");
       break;
     case "gameover":
-      prepare(msg);
+      updatePlayers(msg);
 
       ctx.clearRect(0, 0, 700, 700);
       ctx.fillText(
@@ -84,8 +84,8 @@ connect();
 
 // share link
 
-var sharelink = document.getElementById("sharelink")
-var sharebtn = document.getElementById("sharebtn")
+var sharelink = document.getElementById("sharelink");
+var sharebtn = document.getElementById("sharebtn");
 sharelink.value = location.origin+"/?inviteid="+room.roomid;
 sharelink.addEventListener("click", function () {
   this.select();
@@ -101,9 +101,8 @@ startbtn.addEventListener("click", function () {
   connection.send('{"type":"startgame"}');
 });
 
-function prepare(msg) {
+function updatePlayers(msg) {
   leaderboardbox.innerHTML = "";
-  cardbox.innerHTML = "";
 
   msg.players.forEach(function (item, index) {
     var trow = document.createElement("tr");
@@ -113,11 +112,10 @@ function prepare(msg) {
     trow.appendChild(tnickname);
     leaderboardbox.appendChild(trow);
   });
-  if (msg.admin == room.username) {
+  if (msg.admin == room.username)
     startbtn.style.display = "block";
-  } else {
+  else 
     startbtn.style.display = "none";
-  }
 }
 
 function connect() {
@@ -186,10 +184,6 @@ function updateUI(content) {
     miejsca[miejsca.length-1][1]
   );
 
-  // for (var i = 0; i < miejsca.length; i++)
-  //   ctx.lineTo(miejsca[i][0], miejsca[i][1]);
-
-  // ctx.stroke();
   leaderboardbox.innerHTML = "";
 
   var myplayerindex = content.players.findIndex(function (obj) {
@@ -293,17 +287,18 @@ function updateUI(content) {
   content.yourcards.forEach(function (item, index) {
     var cardimg = document.createElement("img");
     cardimg.setAttribute("src", "img/"+item.color+item.content+".png");
-    cardimg.addEventListener("click", function () {
-      wybierzkarte(item)
-    });
+
+    if (content.isitmymove)
+      cardimg.addEventListener("click", function () {
+        wybierzkarte(item)
+      });
     cardbox.appendChild(cardimg);
   });
 
   var newcardimg = document.createElement("img");
   newcardimg.setAttribute("src", "img/dobierzkarte.png");
-  newcardimg.addEventListener("click", function () {
-    dobierzkarte()
-  });
+  if (content.isitmymove)
+    newcardimg.addEventListener("click",dobierzkarte);
   cardbox.appendChild(newcardimg);
 }
 
@@ -372,14 +367,9 @@ function sendmsg() {
   }
 }
 
-Array.prototype.turnLeft = function (count) {
-  var array = this.slice();
-  for (var i = 0; i < count; i++) {
-    var movedobj = array[0];
-    array = array.concat(movedobj)
-    array.splice(0,1);
-  }
-  return array;
+Array.prototype.turnLeft = function(count=1) {
+  for (var i=0;i<count;i++) this.push(this.shift());
+  return this;
 };
 
 function placeevenly(x) {

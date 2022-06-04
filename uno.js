@@ -34,7 +34,7 @@ exports.init = function() {
       card.content = item;
       card.id = card.type+card.content+card.color;
       if (item == "add2")
-        card.add = true;
+        card.add = 2;
       cards.push(card);
     }
   });
@@ -49,7 +49,7 @@ exports.init = function() {
       card.newcolor = false;
       card.id = card.type+card.content+card.color;
       if (item == "add4color")
-        card.add = true;
+        card.add = 4;
       cards.push(card);
     }
   });
