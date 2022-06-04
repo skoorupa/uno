@@ -103,7 +103,7 @@ class Room {
         this.players.forEach(function(player) {
             // weird bug to be fixed
             var yourcards = player.cards;
-            var isitmymove = player.isitmymove;
+            var isitmymove = player.nickname == self.movemakes.nickname;
             player.send(JSON.stringify({
                 "type": _type,
                 "admin": self.admin.nickname,
@@ -135,10 +135,6 @@ class Room {
         }
 
         // TODO: pick next player if it was removed one's turn 
-
-        // if (this.isitmymove) {
-        //     this.nextplayer = getnextplayer(this);
-        // }
 
         if (this.isStarted) {
             this.sendGameInfo("playerhasquit", {
@@ -239,8 +235,8 @@ class Room {
                 1);
             }
 
-            player.isitmymove = false;
-            if (player.nickname == firstplayer.nickname) player.isitmymove = true;
+            // player.isitmymove = false;
+            // if (player.nickname == firstplayer.nickname) player.isitmymove = true;
 
             player.cards = playercards;
         });
@@ -268,6 +264,8 @@ class Room {
     }
 
     move(user, msg) {
+        if (user.nickname != this.movemakes.nickname) return;
+
         var self = this;
         function next() {
             self.goToNextPlayer();
@@ -277,7 +275,6 @@ class Room {
             }
         }
         
-        if (user.nickname != this.movemakes.nickname) return;
         if (this.blocking && msg.card.content != "skip" && msg.content == "dobierzkarte") {
             user.block = this.blocking-1;
             this.blocking = 0;
@@ -320,7 +317,20 @@ class Room {
                 console.log("->"+user.roomid+": !!!!!!!!!!");
 
             // end of debug
+
             next();
+        }
+
+        if (user.cards.length == 0) {
+            this.ingame--;
+            this.scoreboard.push(user.nickname);
+
+            console.log(`->${this.roomid}: ${user.nickname} has used all of theirs cards`);
+            if (this.ingame <= 1) {
+                this.end();
+
+                return;
+            }
         }
     }
 
@@ -366,6 +376,7 @@ class Room {
                 break;
             case "add4color":
                 this.adding += 4;
+                console.log("THIS ADDING "+this.adding);
                 break;
             default:
                 console.log("->"+user.roomid+": unknown card type: "+msg.card.type);
@@ -383,9 +394,24 @@ class Room {
         this.cardsused.splice(
             this.cardsused.indexOf(card),
         1);
+    }
 
-        if (this.adding && card.type != "add2") {
-            this.drawCard(user);
+    end() {
+        if (this.ingame > 0) {
+            var lastplayers = this.players.filter(player => {
+                return this.scoreboard.indexOf(player.nickname) == -1;
+            });
+
+            this.scoreboard.push(...lastplayers);
+            this.isStarted = false;
+
+            this.sendToEveryPlayer({
+                "type": "gameover",
+                "content": this.scoreboard,
+                "admin": this.admin.nickname
+            });
+
+            console.log(`->${this.roomid}: game has ended`);
         }
     }
 }
