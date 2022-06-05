@@ -58,12 +58,12 @@ connection.onmessage = function (event) {
     case "gameover":
       updatePlayers(msg);
 
-      ctx.clearRect(0, 0, 700, 700);
-      ctx.fillText(
+      canvas.ctx.clearRect(0, 0, 700, 700);
+      canvas.ctx.fillText(
         "Koniec gry!",
       700/2, 50);
       for (var i = 0; i < msg.content.length; i++) {
-        ctx.fillText(
+        canvas.ctx.fillText(
           (i+1)+". "+msg.content[i],
         700/2, 70+22*(i+1));
       }
@@ -146,43 +146,81 @@ function connect() {
 // CANVAS
 //
 
-var c = document.getElementById("c");
-ctx = c.getContext("2d");
+class Canvas {
+  constructor(canvas, d) {
+    this.c = canvas;
+    this.ctx = canvas.getContext("2d");
+    this.height = canvas.height;
+    this.width = canvas.width;
+    this.multiplier = this.height/10 - 10;
+    this.diameter = d;
+    this.margin = (this.height - this.multiplier*this.diameter)/2;
+    this.spots = [
+      [4*this.multiplier+this.margin, 8*this.multiplier+this.margin, 30],
+      [1*this.multiplier+this.margin, 7*this.multiplier+this.margin, 20],
+      [0*this.multiplier+this.margin, 5*this.multiplier+this.margin, 20],
+      [0*this.multiplier+this.margin, 3*this.multiplier+this.margin, 20],
+      [1*this.multiplier+this.margin, 1*this.multiplier+this.margin, 20],
+      [4*this.multiplier+this.margin, 0*this.multiplier+this.margin,-10],
+      [7*this.multiplier+this.margin, 1*this.multiplier+this.margin, 20],
+      [8*this.multiplier+this.margin, 3*this.multiplier+this.margin, 20],
+      [8*this.multiplier+this.margin, 5*this.multiplier+this.margin, 20],
+      [7*this.multiplier+this.margin, 7*this.multiplier+this.margin, 20]
+    ];
+  }
+}
 
-var mnoznik  = 700/10-10;
-var srednica = 8;
-var margin = (700 - (mnoznik*srednica))/2;
-var miejsca = [
-  [4*mnoznik+margin, 8*mnoznik+margin, 30],
-  [1*mnoznik+margin, 7*mnoznik+margin, 20],
-  [0*mnoznik+margin, 5*mnoznik+margin, 20],
-  [0*mnoznik+margin, 3*mnoznik+margin, 20],
-  [1*mnoznik+margin, 1*mnoznik+margin, 20],
-  [4*mnoznik+margin, 0*mnoznik+margin,-10],
-  [7*mnoznik+margin, 1*mnoznik+margin, 20],
-  [8*mnoznik+margin, 3*mnoznik+margin, 20],
-  [8*mnoznik+margin, 5*mnoznik+margin, 20],
-  [7*mnoznik+margin, 7*mnoznik+margin, 20]
-];
+var canvas = new Canvas(document.getElementById('c'), 8);
 
-var twojemiejsce = [4 *mnoznik+margin, 8*mnoznik+margin, 30];
+// var canvas = {
+//   c: document.getElementById("c"),
+//   ctx: this.c.getContext("2d")
+// }
 
-ctx.font="22px Arial";
-ctx.textAlign="center";
-ctx.textBaseline="hanging";
+// var c = document.getElementById("c");
+// ctx = c.getContext("2d");
 
-ctx.fillText(
+// var mnoznik  = 700/10-10;
+// var srednica = 8;
+// var margin = (700 - (mnoznik*srednica))/2;
+// var miejsca = [
+//   [4*mnoznik+margin, 8*mnoznik+margin, 30],
+//   [1*mnoznik+margin, 7*mnoznik+margin, 20],
+//   [0*mnoznik+margin, 5*mnoznik+margin, 20],
+//   [0*mnoznik+margin, 3*mnoznik+margin, 20],
+//   [1*mnoznik+margin, 1*mnoznik+margin, 20],
+//   [4*mnoznik+margin, 0*mnoznik+margin,-10],
+//   [7*mnoznik+margin, 1*mnoznik+margin, 20],
+//   [8*mnoznik+margin, 3*mnoznik+margin, 20],
+//   [8*mnoznik+margin, 5*mnoznik+margin, 20],
+//   [7*mnoznik+margin, 7*mnoznik+margin, 20]
+// ];
+
+canvas.ctx.font="22px Arial";
+canvas.ctx.textAlign="center";
+canvas.ctx.textBaseline="hanging";
+
+canvas.ctx.fillText(
   "Witaj w UNO! Jesteś w pokoju nr "+
   room.roomid,
 700/2, 50);
 
 function updateUI(content) {
   cardbox.innerHTML = "";
-  ctx.clearRect(0, 0, 700, 700);
-  ctx.moveTo(
-    miejsca[miejsca.length-1][0],
-    miejsca[miejsca.length-1][1]
+  canvas.ctx.clearRect(0, 0, 700, 700);
+  canvas.ctx.moveTo(
+    canvas.spots[canvas.spots.length-1][0],
+    canvas.spots[canvas.spots.length-1][1]
   );
+
+  //
+
+  // for (var i = 0; i < canvas.spots.length; i++)
+  //   canvas.ctx.lineTo(canvas.spots[i][0], canvas.spots[i][1]);
+
+  // canvas.ctx.stroke();
+
+  //
 
   leaderboardbox.innerHTML = "";
 
@@ -203,15 +241,15 @@ function updateUI(content) {
     trow.appendChild(tcards);
     leaderboardbox.appendChild(trow);
 
-    ctx.fillStyle = "black";
-    ctx.fillText(item.nickname, miejsca[places[index]][0], miejsca[places[index]][1]+miejsca[places[index]][2]);
-    ctx.fillStyle = "#941D01";
+    canvas.ctx.fillStyle = "black";
+    canvas.ctx.fillText(item.nickname, canvas.spots[places[index]][0], canvas.spots[places[index]][1]+canvas.spots[places[index]][2]);
+    canvas.ctx.fillStyle = "#941D01";
 
     if (item.nickname == room.movemakes) {
-      var w = ctx.measureText(item.nickname).width;
-      ctx.strokeRect(
-        miejsca[places[index]][0] - w/2 - 10,
-        miejsca[places[index]][1]+miejsca[places[index]][2] - 5,
+      var w = canvas.ctx.measureText(item.nickname).width;
+      canvas.ctx.strokeRect(
+        canvas.spots[places[index]][0] - w/2 - 10,
+        canvas.spots[places[index]][1]+canvas.spots[places[index]][2] - 5,
         w+20,
         30
       );
@@ -220,48 +258,48 @@ function updateUI(content) {
 
     if (ilekart % 2 == 0) {
       for (var i = 0; i < ilekart/2; i++) {
-        ctx.fillRect(
-          miejsca[places[index]][0] - 8*(i)-1-6,
-          miejsca[places[index]][1]+miejsca[places[index]][2]-20, 6, 7
+        canvas.ctx.fillRect(
+          canvas.spots[places[index]][0] - 8*(i)-1-6,
+          canvas.spots[places[index]][1]+canvas.spots[places[index]][2]-20, 6, 7
         );
-        ctx.fillRect(
-          miejsca[places[index]][0] + 8*(i)+1,
-          miejsca[places[index]][1]+miejsca[places[index]][2]-20, 6, 7
+        canvas.ctx.fillRect(
+          canvas.spots[places[index]][0] + 8*(i)+1,
+          canvas.spots[places[index]][1]+canvas.spots[places[index]][2]-20, 6, 7
         );
-        ctx.strokeRect(
-          miejsca[places[index]][0] - 8*(i)-1-6,
-          miejsca[places[index]][1]+miejsca[places[index]][2]-20, 6, 7
+        canvas.ctx.strokeRect(
+          canvas.spots[places[index]][0] - 8*(i)-1-6,
+          canvas.spots[places[index]][1]+canvas.spots[places[index]][2]-20, 6, 7
         );
-        ctx.strokeRect(
-          miejsca[places[index]][0] + 8*(i)+1,
-          miejsca[places[index]][1]+miejsca[places[index]][2]-20, 6, 7
+        canvas.ctx.strokeRect(
+          canvas.spots[places[index]][0] + 8*(i)+1,
+          canvas.spots[places[index]][1]+canvas.spots[places[index]][2]-20, 6, 7
         );
       }
     } else {
-      ctx.fillRect(
-        miejsca[places[index]][0] - 3,
-        miejsca[places[index]][1]+miejsca[places[index]][2]-20, 6, 7
+      canvas.ctx.fillRect(
+        canvas.spots[places[index]][0] - 3,
+        canvas.spots[places[index]][1]+canvas.spots[places[index]][2]-20, 6, 7
       );
-      ctx.strokeRect(
-        miejsca[places[index]][0] - 3,
-        miejsca[places[index]][1]+miejsca[places[index]][2]-20, 6, 7
+      canvas.ctx.strokeRect(
+        canvas.spots[places[index]][0] - 3,
+        canvas.spots[places[index]][1]+canvas.spots[places[index]][2]-20, 6, 7
       );
       for (var i = 0; i < (ilekart-1)/2; i++) {
-        ctx.fillRect(
-          miejsca[places[index]][0] - 8*(i)-5-6,
-          miejsca[places[index]][1]+miejsca[places[index]][2]-20, 6, 7
+        canvas.ctx.fillRect(
+          canvas.spots[places[index]][0] - 8*(i)-5-6,
+          canvas.spots[places[index]][1]+canvas.spots[places[index]][2]-20, 6, 7
         );
-        ctx.fillRect(
-          miejsca[places[index]][0] + 8*(i)+5,
-          miejsca[places[index]][1]+miejsca[places[index]][2]-20, 6, 7
+        canvas.ctx.fillRect(
+          canvas.spots[places[index]][0] + 8*(i)+5,
+          canvas.spots[places[index]][1]+canvas.spots[places[index]][2]-20, 6, 7
         );
-        ctx.strokeRect(
-          miejsca[places[index]][0] - 8*(i)-5-6,
-          miejsca[places[index]][1]+miejsca[places[index]][2]-20, 6, 7
+        canvas.ctx.strokeRect(
+          canvas.spots[places[index]][0] - 8*(i)-5-6,
+          canvas.spots[places[index]][1]+canvas.spots[places[index]][2]-20, 6, 7
         );
-        ctx.strokeRect(
-          miejsca[places[index]][0] + 8*(i)+5,
-          miejsca[places[index]][1]+miejsca[places[index]][2]-20, 6, 7
+        canvas.ctx.strokeRect(
+          canvas.spots[places[index]][0] + 8*(i)+5,
+          canvas.spots[places[index]][1]+canvas.spots[places[index]][2]-20, 6, 7
         );
       }
     }
@@ -274,14 +312,14 @@ function updateUI(content) {
       "yellow": "#c8be2e",
       "green": "#25a049"
     }
-    ctx.fillStyle = colors[content.lastcard.newcolor];
-    ctx.fillRect(700/2-15-10, 700/2-25-10, 50, 70);
+    canvas.ctx.fillStyle = colors[content.lastcard.newcolor];
+    canvas.ctx.fillRect(700/2-15-10, 700/2-25-10, 50, 70);
   }
 
   var lastcardimg = document.createElement("img");
   lastcardimg.setAttribute("src", "img/"+content.lastcard.color+content.lastcard.content+".png");
   lastcardimg.onload = function () {
-    ctx.drawImage(lastcardimg, 700/2-15, 700/2-25, 30, 50);
+    canvas.ctx.drawImage(lastcardimg, 700/2-15, 700/2-25, 30, 50);
   }
 
   content.yourcards.forEach(function (item, index) {
