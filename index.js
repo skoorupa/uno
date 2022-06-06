@@ -44,7 +44,7 @@ class Room {
     get allNicknames() {
         let result = [];
         this.players.forEach(player => {
-            result.push(player.nickname);
+            result.push({nickname:player.nickname});
         });
         return result;
     }
@@ -143,7 +143,8 @@ class Room {
         } else {
             this.sendToEveryPlayer({
                 "type":"joinedtoroom",
-                "players": this.allNicknames,
+                // "players": this.allNicknames,
+                "players": this.nicknamesAndCards,
                 "admin": this.admin.nickname
             });
         }
@@ -226,7 +227,8 @@ class Room {
         this.players.forEach(player => {
             // draw cards for everyone
             var playercards = [];
-            for (var i = 0; i < 7; i++) {
+            // for (var i = 0; i < 7; i++) {
+            for (var i = 0; i < 1; i++) {
                 var newcard = this.cards[random(this.cards.length)];
                 playercards.push(newcard);
                 this.cardsused.push(newcard);
@@ -522,7 +524,8 @@ wss.on('connection', function connection(ws) {
 
                 room.sendToEveryPlayer({
                     "type":"joinedtoroom",
-                    "players": room.allNicknames,
+                    // "players": room.allNicknames,
+                    "players": room.nicknamesAndCards,
                     "admin": room.admin.nickname
                 });
                 room.sendToEveryPlayer({

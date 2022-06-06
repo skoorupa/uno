@@ -47,7 +47,7 @@ connection.onmessage = function (event) {
       if (msg.notify) sounds.message.play()
       break;
     case "joinedtoroom":
-      updatePlayers(msg);
+      updateLeaderboard(msg);
       break;
     case "playerhasquit":
       updateUI(msg);
@@ -56,7 +56,9 @@ connection.onmessage = function (event) {
       alert("Ten nick jest już zajęty.");
       break;
     case "gameover":
-      updatePlayers(msg);
+      // updateLeaderboard(msg);
+
+      startbtn.style.display = "block";
 
       canvas.ctx.clearRect(0, 0, 700, 700);
       canvas.ctx.fillText(
@@ -101,15 +103,21 @@ startbtn.addEventListener("click", function () {
   connection.send('{"type":"startgame"}');
 });
 
-function updatePlayers(msg) {
+function updateLeaderboard(msg) {
   leaderboardbox.innerHTML = "";
+  console.log("updateLeaderboard");
+  console.log(msg);
 
   msg.players.forEach(function (item, index) {
     var trow = document.createElement("tr");
     var tnickname = document.createElement("td");
+    var tcards = document.createElement("td");
 
-    tnickname.innerHTML = item;
+    tnickname.innerHTML = item.nickname;
+    tcards.innerHTML = item.cardsquantity;
+    
     trow.appendChild(tnickname);
+    if (item.cardsquantity) trow.appendChild(tcards);
     leaderboardbox.appendChild(trow);
   });
   if (msg.admin == room.username)
@@ -155,46 +163,26 @@ class Canvas {
     this.multiplier = this.height/10 - 10;
     this.diameter = d;
     this.margin = (this.height - this.multiplier*this.diameter)/2;
+
+    function spot(a,b,c, canvas) {
+      return [a*canvas.multiplier+canvas.margin, b*canvas.multiplier+canvas.margin, c]
+    }
     this.spots = [
-      [4*this.multiplier+this.margin, 8*this.multiplier+this.margin, 30],
-      [1*this.multiplier+this.margin, 7*this.multiplier+this.margin, 20],
-      [0*this.multiplier+this.margin, 5*this.multiplier+this.margin, 20],
-      [0*this.multiplier+this.margin, 3*this.multiplier+this.margin, 20],
-      [1*this.multiplier+this.margin, 1*this.multiplier+this.margin, 20],
-      [4*this.multiplier+this.margin, 0*this.multiplier+this.margin,-10],
-      [7*this.multiplier+this.margin, 1*this.multiplier+this.margin, 20],
-      [8*this.multiplier+this.margin, 3*this.multiplier+this.margin, 20],
-      [8*this.multiplier+this.margin, 5*this.multiplier+this.margin, 20],
-      [7*this.multiplier+this.margin, 7*this.multiplier+this.margin, 20]
+      spot(4, 8, 30, this),
+      spot(1, 7, 20, this),
+      spot(0, 5, 20, this),
+      spot(0, 3, 20, this),
+      spot(1, 1, 20, this),
+      spot(4, 0,-10, this),
+      spot(7, 1, 20, this),
+      spot(8, 3, 20, this),
+      spot(8, 5, 20, this),
+      spot(7, 7, 20, this)
     ];
   }
 }
 
 var canvas = new Canvas(document.getElementById('c'), 8);
-
-// var canvas = {
-//   c: document.getElementById("c"),
-//   ctx: this.c.getContext("2d")
-// }
-
-// var c = document.getElementById("c");
-// ctx = c.getContext("2d");
-
-// var mnoznik  = 700/10-10;
-// var srednica = 8;
-// var margin = (700 - (mnoznik*srednica))/2;
-// var miejsca = [
-//   [4*mnoznik+margin, 8*mnoznik+margin, 30],
-//   [1*mnoznik+margin, 7*mnoznik+margin, 20],
-//   [0*mnoznik+margin, 5*mnoznik+margin, 20],
-//   [0*mnoznik+margin, 3*mnoznik+margin, 20],
-//   [1*mnoznik+margin, 1*mnoznik+margin, 20],
-//   [4*mnoznik+margin, 0*mnoznik+margin,-10],
-//   [7*mnoznik+margin, 1*mnoznik+margin, 20],
-//   [8*mnoznik+margin, 3*mnoznik+margin, 20],
-//   [8*mnoznik+margin, 5*mnoznik+margin, 20],
-//   [7*mnoznik+margin, 7*mnoznik+margin, 20]
-// ];
 
 canvas.ctx.font="22px Arial";
 canvas.ctx.textAlign="center";
@@ -205,8 +193,10 @@ canvas.ctx.fillText(
   room.roomid,
 700/2, 50);
 
-function updateUI(content) {
+function updateUI(msg) {
   cardbox.innerHTML = "";
+  leaderboardbox.innerHTML = "";
+  startbtn.style.display = "none";
   canvas.ctx.clearRect(0, 0, 700, 700);
   canvas.ctx.moveTo(
     canvas.spots[canvas.spots.length-1][0],
@@ -222,25 +212,14 @@ function updateUI(content) {
 
   //
 
-  leaderboardbox.innerHTML = "";
-
-  var myplayerindex = content.players.findIndex(function (obj) {
+  var myplayerindex = msg.players.findIndex(function (obj) {
     return obj.nickname == room.username;
   });
 
-  var places = placeevenly(content.players.length);
+  var places = placeevenly(msg.players.length);
+  updateLeaderboard(msg);
 
-  content.players.turnLeft(myplayerindex).forEach(function (item, index) {
-    var trow = document.createElement("tr");
-    var tnickname = document.createElement("td");
-    var tcards = document.createElement("td");
-
-    tnickname.innerHTML = item.nickname;
-    tcards.innerHTML = item.cardsquantity;
-    trow.appendChild(tnickname);
-    trow.appendChild(tcards);
-    leaderboardbox.appendChild(trow);
-
+  msg.players.turnLeft(myplayerindex).forEach(function (item, index) {
     canvas.ctx.fillStyle = "black";
     canvas.ctx.fillText(item.nickname, canvas.spots[places[index]][0], canvas.spots[places[index]][1]+canvas.spots[places[index]][2]);
     canvas.ctx.fillStyle = "#941D01";
@@ -256,77 +235,53 @@ function updateUI(content) {
     }
     var ilekart = item.cardsquantity;
 
+    var c = canvas.spots[places[index]][1]+canvas.spots[places[index]][2]-20;
     if (ilekart % 2 == 0) {
       for (var i = 0; i < ilekart/2; i++) {
-        canvas.ctx.fillRect(
-          canvas.spots[places[index]][0] - 8*(i)-1-6,
-          canvas.spots[places[index]][1]+canvas.spots[places[index]][2]-20, 6, 7
-        );
-        canvas.ctx.fillRect(
-          canvas.spots[places[index]][0] + 8*(i)+1,
-          canvas.spots[places[index]][1]+canvas.spots[places[index]][2]-20, 6, 7
-        );
-        canvas.ctx.strokeRect(
-          canvas.spots[places[index]][0] - 8*(i)-1-6,
-          canvas.spots[places[index]][1]+canvas.spots[places[index]][2]-20, 6, 7
-        );
-        canvas.ctx.strokeRect(
-          canvas.spots[places[index]][0] + 8*(i)+1,
-          canvas.spots[places[index]][1]+canvas.spots[places[index]][2]-20, 6, 7
-        );
+        var a = canvas.spots[places[index]][0] - 8*(i)-1-6;
+        var b = canvas.spots[places[index]][0] + 8*(i)+1;
+        canvas.ctx.fillRect(a, c, 6, 7);
+        canvas.ctx.fillRect(b, c, 6, 7);
+        canvas.ctx.strokeRect(a, c, 6, 7);
+        canvas.ctx.strokeRect(b, c, 6, 7);
       }
     } else {
-      canvas.ctx.fillRect(
-        canvas.spots[places[index]][0] - 3,
-        canvas.spots[places[index]][1]+canvas.spots[places[index]][2]-20, 6, 7
-      );
-      canvas.ctx.strokeRect(
-        canvas.spots[places[index]][0] - 3,
-        canvas.spots[places[index]][1]+canvas.spots[places[index]][2]-20, 6, 7
-      );
+      var x = canvas.spots[places[index]][0] - 3;
+      canvas.ctx.fillRect(x, c, 6, 7);
+      canvas.ctx.strokeRect(x, c, 6, 7);
       for (var i = 0; i < (ilekart-1)/2; i++) {
-        canvas.ctx.fillRect(
-          canvas.spots[places[index]][0] - 8*(i)-5-6,
-          canvas.spots[places[index]][1]+canvas.spots[places[index]][2]-20, 6, 7
-        );
-        canvas.ctx.fillRect(
-          canvas.spots[places[index]][0] + 8*(i)+5,
-          canvas.spots[places[index]][1]+canvas.spots[places[index]][2]-20, 6, 7
-        );
-        canvas.ctx.strokeRect(
-          canvas.spots[places[index]][0] - 8*(i)-5-6,
-          canvas.spots[places[index]][1]+canvas.spots[places[index]][2]-20, 6, 7
-        );
-        canvas.ctx.strokeRect(
-          canvas.spots[places[index]][0] + 8*(i)+5,
-          canvas.spots[places[index]][1]+canvas.spots[places[index]][2]-20, 6, 7
-        );
+        var a = canvas.spots[places[index]][0] - 8*(i)-5-6;
+        var b = canvas.spots[places[index]][0] + 8*(i)+5;
+        canvas.ctx.fillRect(a, c, 6, 7);
+        canvas.ctx.fillRect(b, c, 6, 7);
+        canvas.ctx.strokeRect(a, c, 6, 7);
+        canvas.ctx.strokeRect(b, c, 6, 7);
       }
     }
   });
 
-  if (content.lastcard.colorchange) {
+  if (msg.lastcard.colorchange) {
     var colors = {
       "red": "#ff0000",
       "blue": "#256fa1",
       "yellow": "#c8be2e",
       "green": "#25a049"
     }
-    canvas.ctx.fillStyle = colors[content.lastcard.newcolor];
+    canvas.ctx.fillStyle = colors[msg.lastcard.newcolor];
     canvas.ctx.fillRect(700/2-15-10, 700/2-25-10, 50, 70);
   }
 
   var lastcardimg = document.createElement("img");
-  lastcardimg.setAttribute("src", "img/"+content.lastcard.color+content.lastcard.content+".png");
+  lastcardimg.setAttribute("src", "img/"+msg.lastcard.color+msg.lastcard.content+".png");
   lastcardimg.onload = function () {
     canvas.ctx.drawImage(lastcardimg, 700/2-15, 700/2-25, 30, 50);
   }
 
-  content.yourcards.forEach(function (item, index) {
+  msg.yourcards.forEach(function (item, index) {
     var cardimg = document.createElement("img");
     cardimg.setAttribute("src", "img/"+item.color+item.content+".png");
 
-    if (content.isitmymove)
+    if (msg.isitmymove)
       cardimg.addEventListener("click", function () {
         wybierzkarte(item)
       });
@@ -335,7 +290,7 @@ function updateUI(content) {
 
   var newcardimg = document.createElement("img");
   newcardimg.setAttribute("src", "img/dobierzkarte.png");
-  if (content.isitmymove)
+  if (msg.isitmymove)
     newcardimg.addEventListener("click",dobierzkarte);
   cardbox.appendChild(newcardimg);
 }
