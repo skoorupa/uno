@@ -365,17 +365,13 @@ Array.prototype.turnLeft = function(count=1) {
   return this;
 };
 
-function placeevenly(x) {
-  var a = 10 % x;
-  var b = Math.floor(10 / x);
+function placeevenly(x, y=10) {
   var r = [0];
-  console.log(a+"a "+b+"b");
+  var a = 0;
+  var j = y/x;
   for (var i=1;i<x;i++) {
-    if(a && i!=(Math.floor(b/2)+1)) {
-      r[i] = r[i-1] + b + 1;
-      a--;
-    }
-    else r[i] = r[i-1]+b;
+  	r.push(r[i-1]+j);
   }
-  return r;
+  
+  return r.map(item=>{return Math.floor(item)});
 }
