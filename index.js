@@ -325,7 +325,7 @@ class Room {
             this.ingame--;
             this.scoreboard.push(user.nickname);
 
-            console.log(`->${this.roomid}: ${user.nickname} has used all of theirs cards`);
+            console.log(`->${this.roomid}: ${user.nickname} has used all of theirs cards (${this.ingame})`);
             if (this.ingame <= 1) {
                 this.end();
 
@@ -397,22 +397,20 @@ class Room {
     }
 
     end() {
-        if (this.ingame > 0) {
-            var lastplayers = this.players.filter(player => {
-                return this.scoreboard.indexOf(player.nickname) == -1;
-            });
+        var lastplayers = this.players.filter(player => {
+            return this.scoreboard.indexOf(player.nickname) == -1;
+        });
 
-            this.scoreboard.push(...lastplayers);
-            this.isStarted = false;
+        this.scoreboard.push(...lastplayers);
+        this.isStarted = false;
 
-            this.sendToEveryPlayer({
-                "type": "gameover",
-                "content": this.scoreboard,
-                "admin": this.admin.nickname
-            });
+        this.sendToEveryPlayer({
+            "type": "gameover",
+            "content": this.scoreboard,
+            "admin": this.admin.nickname
+        });
 
-            console.log(`->${this.roomid}: game has ended`);
-        }
+        console.log(`->${this.roomid}: game has ended`);
     }
 }
 
