@@ -259,12 +259,24 @@ class Room {
 
     move(user, msg) {
         if (user.nickname != this.movemakes.nickname) return;
-        this.players.forEach(player => {
-            console.log(`BLOCKS: ${player.nickname}: ${player.block}`);
-        });
+        // this.players.forEach(player => {
+        //     console.log(`BLOCKS: ${player.nickname}: ${player.block}`);
+        // });
 
         var self = this;
         function next() {
+            if (user.cards.length == 0) {
+                self.ingame--;
+                self.scoreboard.push(user.nickname);
+
+                console.log(`->${self.roomid}: ${user.nickname} has used all of theirs cards (${self.ingame})`);
+                if (self.ingame <= 1) {
+                    self.end();
+
+                    return;
+                }
+            }
+
             self.goToNextPlayer();
             console.log("move makes:"+self.movemakes.nickname);
             if (self.isStarted) {
@@ -316,18 +328,6 @@ class Room {
             // end of debug
 
             next();
-        }
-
-        if (user.cards.length == 0) {
-            this.ingame--;
-            this.scoreboard.push(user.nickname);
-
-            console.log(`->${this.roomid}: ${user.nickname} has used all of theirs cards (${this.ingame})`);
-            if (this.ingame <= 1) {
-                this.end();
-
-                return;
-            }
         }
     }
 
@@ -398,12 +398,17 @@ class Room {
             return this.scoreboard.indexOf(player.nickname) == -1;
         });
 
+        lastplayers = lastplayers.map(player => {
+            return player.nickname;
+        });
+
         this.scoreboard.push(...lastplayers);
         this.isStarted = false;
 
         this.sendToEveryPlayer({
             "type": "gameover",
             "content": this.scoreboard,
+            "players" : this.nicknamesAndCards,
             "admin": this.admin.nickname
         });
 
