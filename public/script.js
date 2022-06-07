@@ -56,7 +56,7 @@ connection.onmessage = function (event) {
       alert("Ten nick jest już zajęty.");
       break;
     case "gameover":
-      // updateLeaderboard(msg);
+      updateLeaderboard(msg);
 
       startbtn.style.display = "block";
 
@@ -109,9 +109,13 @@ function updateLeaderboard(msg) {
   console.log(msg);
 
   msg.players.forEach(function (item, index) {
-    var trow = document.createElement("tr");
-    var tnickname = document.createElement("td");
-    var tcards = document.createElement("td");
+    var trow = document.createElement("div");
+    var tnickname = document.createElement("span");
+    var tcards = document.createElement("span");
+
+    trow.classList.add("leaderboard_row");
+    tnickname.classList.add("leaderboard_nickname");
+    tcards.classList.add("leaderboard_cards");
 
     tnickname.innerHTML = item.nickname;
     tcards.innerHTML = item.cardsquantity;

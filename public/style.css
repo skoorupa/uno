@@ -38,11 +38,18 @@ body {
 
 /* leaderboard */
 
-#leaderboard td {
-  margin:5px;
+#leaderboard span {
   background-color: #bcc7b2;
   padding: 10px;
   border-radius: 5px;
+}
+
+#leaderboard .leaderboard_row {
+  margin-bottom: 5px;
+  display: grid;
+  grid-auto-flow: column;
+  column-gap: 5px;
+  grid-auto-columns: auto min-content;
 }
 
 /* start */
