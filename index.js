@@ -75,6 +75,7 @@ class Room {
         ws.nickname = nickname;
         ws.roomid = this.roomid;
         ws.id = this.idcounter;
+        ws.block = 0;
         this.idcounter++;
 
         this.players.push(ws);
@@ -91,17 +92,8 @@ class Room {
 
     sendGameInfo(_type = "next", additional = {}) {
         var self = this;
-        // var a = {
-        //     "type": _type,
-        //     "admin": self.admin,
-        //     "lastcard": self.lastcard,
-        //     "movemakes": self.movemakes.nickname,
-        //     "direction": self.direction,
-        //     "players": self.nicknamesAndCards
-        // };
 
         this.players.forEach(function(player) {
-            // weird bug to be fixed
             var yourcards = player.cards;
             var isitmymove = player.nickname == self.movemakes.nickname;
             player.send(JSON.stringify({
@@ -267,6 +259,9 @@ class Room {
 
     move(user, msg) {
         if (user.nickname != this.movemakes.nickname) return;
+        this.players.forEach(player => {
+            console.log(`BLOCKS: ${player.nickname}: ${player.block}`);
+        });
 
         var self = this;
         function next() {
