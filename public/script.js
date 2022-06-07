@@ -59,6 +59,7 @@ connection.onmessage = function (event) {
       updateLeaderboard(msg);
 
       startbtn.style.display = "block";
+      cardbox.innerHTML = "";
 
       canvas.ctx.clearRect(0, 0, 700, 700);
       canvas.ctx.fillText(
