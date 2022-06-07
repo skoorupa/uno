@@ -120,7 +120,7 @@ function updateLeaderboard(msg) {
     if (item.cardsquantity) trow.appendChild(tcards);
     leaderboardbox.appendChild(trow);
   });
-  if (msg.admin == room.username)
+  if (msg.admin == room.username && !msg.lastcard)
     startbtn.style.display = "block";
   else 
     startbtn.style.display = "none";
