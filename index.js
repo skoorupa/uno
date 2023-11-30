@@ -219,8 +219,7 @@ class Room {
         this.players.forEach(player => {
             // draw cards for everyone
             var playercards = [];
-            // for (var i = 0; i < 7; i++) {
-            for (var i = 0; i < 1; i++) {
+            for (var i = 0; i < 7; i++) {
                 var newcard = this.cards[random(this.cards.length)];
                 playercards.push(newcard);
                 this.cardsused.push(newcard);
